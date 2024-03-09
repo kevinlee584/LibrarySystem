@@ -3,25 +3,25 @@ use `library`;
 
 CREATE TABLE IF NOT EXISTS `User` (
     `UserId`             int          NOT NULL AUTO_INCREMENT,
-    `PhoneNumber`        varchar(255) NOT NULL UNIQUE,
+    `PhoneNumber`        varchar(10)  NOT NULL UNIQUE,
     `Password`           varchar(255) NOT NULL,
     `UserName`           varchar(255) NOT NULL,
     `RegistrationTime`   date         NOT NULL,
     `LastLoginTime`      date,
-    `Role`               varchar(225) NOT NULL,
+    `Role`               varchar(15)  NOT NULL,
     PRIMARY KEY(`UserId`)
 );
 
 CREATE TABLE IF NOT EXISTS `Inventory` (
     `InventoryId`       int          NOT NULL AUTO_INCREMENT,
-    `ISBN`              varchar(255) NOT NULL UNIQUE,
+    `ISBN`              varchar(20)  NOT NULL,
     `StoreTime`         date         NOT NULL,
-    `Statue`            varchar(255) NOT NULL,
+    `Status`            ENUM('ALLOWED', 'BORROWED', 'BUSY', 'LOST', 'DAMAGED', 'ABANDONED'),
     PRIMARY KEY(`InventoryId`)
 );
 
 CREATE TABLE IF NOT EXISTS `Book` (
-    `ISBN`              varchar(255) NOT NULL,
+    `ISBN`              varchar(20)  NOT NULL,
     `Name`              varchar(255) NOT NULL,
     `Author`            varchar(255) NOT NULL,
     `Introduction`      text         NOT NULL,
@@ -32,9 +32,11 @@ CREATE TABLE IF NOT EXISTS `BorrowingRecord` (
     `UserId`            int         NOT NULL,
     `InventoryId`       int         NOT NULL,
     `BorrowTime`        date        NOT NULL,
-    `ReturnTime`        date,
-    PRIMARY KEY(`UserId`, `InventoryId` )
+    `ReturnTime`        date
 );
+
+CREATE INDEX uid on `BorrowingRecord` (`UserId`);
+CREATE INDEX iid on `BorrowingRecord` (`InventoryId`);
 
 CREATE TABLE IF NOT EXISTS `JwtToken` (
     `UserId`            int         NOT NULL,
@@ -45,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `JwtToken` (
 
 DROP PROCEDURE IF EXISTS user_signup;
 DELIMITER //
-CREATE PROCEDURE user_signup(IN PhoneNumber varchar(255), IN Password varchar(255), IN UserName varchar(255), IN Role varchar(255))
+CREATE PROCEDURE user_signup(IN PhoneNumber varchar(10), IN Password varchar(255), IN UserName varchar(255), IN Role varchar(15))
 BEGIN
     START TRANSACTION;
         INSERT INTO `User`(`PhoneNumber`, `Password`, `UserName`, `RegistrationTime`, `LastLoginTime`, `Role`)
@@ -56,7 +58,7 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS user_signin;
 DELIMITER //
-CREATE PROCEDURE user_signin(IN PhoneNumber varchar(255), IN Password varchar(255), IN Token text)
+CREATE PROCEDURE user_signin(IN PhoneNumber varchar(10), IN Password varchar(255), IN Token text)
 BEGIN
     DECLARE correct int;
     DECLARE is_exist int;
@@ -82,7 +84,7 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS user_signout;
 DELIMITER //
-CREATE PROCEDURE user_signout(IN PhoneNumber varchar(255))
+CREATE PROCEDURE user_signout(IN PhoneNumber varchar(10))
 BEGIN
     DECLARE user_id int;
     START TRANSACTION;
@@ -94,7 +96,7 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS get_user_by_phone_number;
 DELIMITER //
-CREATE PROCEDURE get_user_by_phone_number(IN PhoneNumber varchar(255))
+CREATE PROCEDURE get_user_by_phone_number(IN PhoneNumber varchar(10))
 BEGIN
     START TRANSACTION;
         SELECT * FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber;
@@ -104,38 +106,44 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS find_inventory_by_ISBN;
 DELIMITER //
-CREATE PROCEDURE find_inventory_by_ISBN(IN ISBN varchar(255))
+CREATE PROCEDURE find_inventory_by_ISBN(IN ISBN varchar(20))
 BEGIN
-    SELECT * FROM `Inventory` WHERE `Inventory`.`ISBN` = ISBN;
+    SELECT rc.`InventoryId`, rc.`Name`, rc.`Author`, rc.`Status`, `BorrowingRecord`.`BorrowTime`, `BorrowingRecord`.`ReturnTime` 
+    FROM (SELECT `Book`.`Name`, `Book`.`Author`, `Inventory`.`InventoryId`, `Inventory`.`Status` FROM `Book`, `Inventory` WHERE `Book`.`ISBN` = ISBN and `Book`.`ISBN` = `Inventory`.`ISBN`) as rc
+    LEFT JOIN `BorrowingRecord` ON rc.`InventoryId` = `BorrowingRecord`.`InventoryId`;
 END//
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS update_inventory_status_by_InventoryId;
 DELIMITER //
-CREATE PROCEDURE update_inventory_status_by_InventoryId(IN InventoryId int, IN Statue varchar(255))
+CREATE PROCEDURE update_inventory_status_by_InventoryId(IN InventoryId int, IN Status varchar(15))
 BEGIN
     START TRANSACTION;
-        UPDATE `Inventory` SET `Inventory`.`Statue` = Statue WHERE `Inventory`.`InventoryId` = InventoryId;
+        UPDATE `Inventory` SET `Inventory`.`Status` = Status WHERE `Inventory`.`InventoryId` = InventoryId;
     COMMIT;
 END//
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS add_book;
 DELIMITER //
-CREATE PROCEDURE add_book(IN ISBN varchar(255), IN Name varchar(255), IN Author varchar(255), IN Introduction text)
+CREATE PROCEDURE add_book(IN ISBN varchar(20), IN Name varchar(255), IN Author varchar(255), IN Introduction text, IN Status varchar(15))
 BEGIN
+    DECLARE is_exist int;
     START TRANSACTION;
-        INSERT INTO `Book`(`ISBN`, `Name`, `Author`, `Introduction`)
-        VALUES (ISBN, Name, Author, Introduction);
+        SET is_exist = (SELECT COUNT(*) FROM `Book` WHERE `Book`.`ISBN` = ISBN);
+        IF is_exist = 1 THEN
+            INSERT INTO `Book`(`ISBN`, `Name`, `Author`, `Introduction`)
+            VALUES (ISBN, Name, Author, Introduction);
+        END IF;
         INSERT INTO `Inventory`(`ISBN`, `StoreTime`, `Status`)
-        VALUES (ISBN, NOW(), 'ALLOW');
+        VALUES (ISBN, NOW(), Status);
     COMMIT;
 END//
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS remove_book;
 DELIMITER //
-CREATE PROCEDURE remove_book(IN `InventoryId` varchar(255))
+CREATE PROCEDURE remove_book(IN `InventoryId` int)
 BEGIN
     START TRANSACTION;
         DELETE FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId;
@@ -145,16 +153,17 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS borrow_book;
 DELIMITER //
-CREATE PROCEDURE borrow_book(IN PhoneNumber varchar(255), IN InventoryId varchar(255))
+CREATE PROCEDURE borrow_book(IN PhoneNumber varchar(10), IN InventoryId int)
 BEGIN
-    DECLARE is_allow varchar(255);
+    DECLARE is_allow varchar(15);
     DECLARE user_id int;
+    SELECT * FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE;
     START TRANSACTION;
-        SET is_allow = (SELECT `Statue` FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId);
-        IF is_allow = `ALLOW` THEN
-            SET user_id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
-            INSERT INTO `BorrowingRecord`(`UserId`, `InventoryId`, `BorrowTime`, `ReturnTime`)
-            VALUES(user_id, InventoryId, NOW(), NULL);
+        SET is_allow = (SELECT `Status` FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId);
+        IF is_allow = "ALLOWED" THEN
+            SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+            INSERT INTO `BorrowingRecord`(`UserId`, `InventoryId`, `BorrowTime`, `ReturnTime`) VALUES(user_id, InventoryId, NOW(), NULL);
+            UPDATE `Inventory` SET `Inventory`.`Status` = "BORROWED" WHERE `Inventory`.`InventoryId` = InventoryId;
         END IF;
     COMMIT;
 END//
@@ -162,19 +171,38 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS return_book;
 DELIMITER //
-CREATE PROCEDURE return_book(IN InventoryId varchar(255))
+CREATE PROCEDURE return_book(IN InventoryId int, IN PhoneNumber varchar(10))
 BEGIN
+    DECLARE user_id int;
     START TRANSACTION;
-        UPDATE `BorrowingRecord` SET `BorrowingRecord`.`ReturnTime` = NOW() WHERE `BorrowingRecord`.`InventoryId` = InventoryId;
+        SELECT * FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE;
+        SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+        UPDATE `BorrowingRecord` SET `BorrowingRecord`.`ReturnTime` = NOW() WHERE `BorrowingRecord`.`InventoryId` = InventoryId and `BorrowingRecord`.`UserId` = user_id;
+        UPDATE `Inventory` SET `Inventory`.`Status` = "ALLOWED" WHERE `Inventory`.`InventoryId` = InventoryId;
     COMMIT;
 END//
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS get_all_books;
 DELIMITER //
-CREATE PROCEDURE get_all_book()
+CREATE PROCEDURE get_all_books()
 BEGIN
     SELECT * FROM `Book`;
+END//
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS get_record_by_phone;
+DELIMITER //
+CREATE PROCEDURE get_record_by_phone(IN PhoneNumber varchar(10))
+BEGIN
+    DECLARE user_id int;
+    START TRANSACTION;
+        SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+
+        SELECT `Inventory`.`InventoryId`, `Inventory`.`Status`, `Book`.`Name`, `Book`. `Author`, Record.`BorrowTime`, Record.`ReturnTime`
+        FROM (SELECT * FROM `BorrowingRecord` WHERE `BorrowingRecord`.`UserId` = user_id) as Record, `Book`, `Inventory`
+        WHERE  Record.`InventoryId`  = `Inventory`.`InventoryId` and `Inventory`.`ISBN` = `Book`.`ISBN`;
+    COMMIT;
 END//
 DELIMITER ;
 

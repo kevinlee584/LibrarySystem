@@ -51,8 +51,8 @@ public class JwtService {
         return String.valueOf(claims.get("phoneNumber"));
     }
 
-    public String generateToken(User user) {
-        return Jwts.builder().setClaims(Map.of("phoneNumber", user.getPhoneNumber()))
+    public String generateToken(String phoneNumber) {
+        return Jwts.builder().setClaims(Map.of("phoneNumber", phoneNumber))
                 .signWith(SignatureAlgorithm.RS512, privateKey).compact();
     }
 }

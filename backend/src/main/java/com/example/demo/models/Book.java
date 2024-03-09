@@ -1,23 +1,23 @@
 package com.example.demo.models;
 
 public class Book {
-    private Integer ISBN;
+    private String ISBN;
     private String name;
     private String author;
     private String introduction;
 
-    public Book(Integer ISBN, String name, String author, String introduction) {
+    public Book(String ISBN, String name, String author, String introduction) {
         this.ISBN = ISBN;
         this.name = name;
         this.author = author;
         this.introduction = introduction;
     }
 
-    public Integer getISBN() {
+    public String getISBN() {
         return ISBN;
     }
 
-    public void setISBN(Integer ISBN) {
+    public void setISBN(String ISBN) {
         this.ISBN = ISBN;
     }
 

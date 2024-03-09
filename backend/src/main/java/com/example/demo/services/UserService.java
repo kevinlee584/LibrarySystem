@@ -16,17 +16,21 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
-    public boolean addUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.signUp(user);
+    public boolean addUser(String password,String username, String phoneNumber, String role) {
+        System.out.print(username.matches("^\\w{0,100}$"));
+        System.out.print(phoneNumber.matches("^\\d{10}$"));
+        if(!username.matches("^\\w{0,100}$") || !phoneNumber.matches("^\\d{10}$"))
+            return false;
+
+        return userRepository.signUp(passwordEncoder.encode(password), username, phoneNumber, role);
     }
 
-    public String userSignIn(User user){
-        String token = jwtService.generateToken(user);
-        if (userRepository.signIn(user, token))
-            return token;
-        else
+    public String userSignIn(String password, String phoneNumber){
+        if(!phoneNumber.matches("^\\d{10}$"))
             return "";
+
+        String token = jwtService.generateToken(phoneNumber);
+        return userRepository.signIn(password, phoneNumber, token) ? token : "";
     }
 
     public boolean userSignOut(User user){

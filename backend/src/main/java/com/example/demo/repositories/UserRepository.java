@@ -18,18 +18,15 @@ import java.util.*;
 public class UserRepository {
     @Autowired
     private JdbcTemplate template;
-    public boolean signUp(User user){
-        System.out.println(user.getPhoneNumber().matches("^\\d{10}$"));
-        if(!user.getPhoneNumber().matches("^\\d{10}$"))
-            return false;
+    public boolean signUp(String password, String username, String phoneNumber, String role){
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signup");
 
         SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("PhoneNumber", user.getPhoneNumber())
-                .addValue("Password", user.getPassword())
-                .addValue("UserName", user.getUsername())
-                .addValue("Role", user.getRole());
+                .addValue("PhoneNumber", phoneNumber)
+                .addValue("Password", password)
+                .addValue("UserName", username)
+                .addValue("Role", role);
         try {
             simpleJdbcCall.execute(in);
             return true;
@@ -37,15 +34,12 @@ public class UserRepository {
             return false;
         }
     }
-    public boolean signIn(User user, String token) {
-        if(!user.getPhoneNumber().matches("^\\d{10}$"))
-            return false;
-
+    public boolean signIn(String password, String phoneNumber, String token) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
 
         SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("PhoneNumber", user.getPhoneNumber())
-                .addValue("Password", user.getPassword())
+                .addValue("PhoneNumber", phoneNumber)
+                .addValue("Password", password)
                 .addValue("Token", token);
 
         try {
@@ -57,7 +51,7 @@ public class UserRepository {
     }
 
     public boolean signOut(User user) {
-        if(!user.getPhoneNumber().matches("^\\d{10}$"))
+        if(!String.valueOf(user.getPhoneNumber()).matches("^\\d{10}$"))
             return false;
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signout");
@@ -89,8 +83,7 @@ public class UserRepository {
                     user.setRegistrationTime(RegistrationTime);
                     return user;
                 });
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("PhoneNumber", phoneNumber);
+        SqlParameterSource in = new MapSqlParameterSource().addValue("PhoneNumber", phoneNumber);
         try {
             Map<String, Object> out = simpleJdbcCall.execute(in);
             List<User> users = (List<User>)out.get("mapRef");

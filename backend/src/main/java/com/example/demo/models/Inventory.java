@@ -4,11 +4,11 @@ import java.sql.Date;
 
 public class Inventory {
     private Integer id;
-    private Integer ISBN;
+    private String ISBN;
     private Date storeTime;
     private String statue;
 
-    public Inventory(Integer id, Integer ISBN, Date storeTime, String statue) {
+    public Inventory(Integer id, String ISBN, Date storeTime, String statue) {
         this.id = id;
         this.ISBN = ISBN;
         this.storeTime = storeTime;
@@ -23,11 +23,11 @@ public class Inventory {
         this.id = id;
     }
 
-    public Integer getISBN() {
+    public String getISBN() {
         return ISBN;
     }
 
-    public void setISBN(Integer ISBN) {
+    public void setISBN(String ISBN) {
         this.ISBN = ISBN;
     }
 

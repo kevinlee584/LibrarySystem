@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             User user = userService.findUserByPhoneNumber(phoneNumber);
 
             if (!Objects.isNull(user)) {
+                request.setAttribute("PhoneNumber", phoneNumber);
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         user,
                         user.getPassword(),

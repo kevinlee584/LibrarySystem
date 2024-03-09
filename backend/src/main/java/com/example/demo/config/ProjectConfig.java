@@ -14,9 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -25,9 +30,9 @@ public class ProjectConfig{
     SecurityFilterChain SecurityFilterChain(HttpSecurity http, JwtAuthenticationFilter filter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers("/signin", "/signup").permitAll()
-                                .requestMatchers("/book/add", "/book/remove").hasAnyRole("USER","ADMIN")
-                                .requestMatchers("/book/borrow", "/book/return", "/book/all").hasRole("USER")
+                        req.requestMatchers("/book/add", "/book/remove").hasRole("ADMIN")
+                                .requestMatchers("/book/borrow", "/book/return", "/book/show/record").hasAnyRole("ADMIN", "USER")
+                                .requestMatchers("/signin", "/signup", "/book/**").permitAll()
                                 .anyRequest().denyAll());
 
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)

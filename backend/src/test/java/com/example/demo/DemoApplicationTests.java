@@ -21,9 +21,7 @@ class DemoApplicationTests {
 	private JwtService jwtService;
 	@Test
 	void contextLoads() {
-		User user = new User("123", "456", "0936990321", "USER");
-		System.out.println(service.addUser(user));
-		System.out.println(service.userSignIn(user));
+
 	}
 
 	@Test
