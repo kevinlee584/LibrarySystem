@@ -19,13 +19,17 @@ public class UserRepository {
     @Autowired
     private JdbcTemplate template;
     public boolean signUp(User user){
+        System.out.println(user.getPhoneNumber().matches("^\\d{10}$"));
+        if(!user.getPhoneNumber().matches("^\\d{10}$"))
+            return false;
+
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signup");
+
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", user.getPhoneNumber())
                 .addValue("Password", user.getPassword())
                 .addValue("UserName", user.getUsername())
                 .addValue("Role", user.getRole());
-
         try {
             simpleJdbcCall.execute(in);
             return true;
@@ -34,6 +38,9 @@ public class UserRepository {
         }
     }
     public boolean signIn(User user, String token) {
+        if(!user.getPhoneNumber().matches("^\\d{10}$"))
+            return false;
+
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
 
         SqlParameterSource in = new MapSqlParameterSource()
@@ -50,6 +57,9 @@ public class UserRepository {
     }
 
     public boolean signOut(User user) {
+        if(!user.getPhoneNumber().matches("^\\d{10}$"))
+            return false;
+
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signout");
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", user.getPhoneNumber());
