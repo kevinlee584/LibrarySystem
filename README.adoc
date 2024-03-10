@@ -34,7 +34,7 @@ image::imgs/arch.png[]
 
 === [.red]#WEB 端#
 image::imgs/code-snapshotA.png[]
-在 WEB 端方面，首先會將寫好的 VUE 檔案做編譯，放入 NGINX 資料夾中，利用上面的 CODE 代理靜態檔案。在執行測試時，在頁面轉換上有遇到 404 PAGE NOT FOUND 的問題，上網查了資料，原來因為我使用的 VUE-ROUTER 模式是 HTML5 MODE，官網資料是說，若用戶直接在瀏覽器下訪問路徑，BROWSER 會直接訪問 WEB 端，而 WEB 端會找不到資料就會回傳 404 ERROR。為了解決這問題，透過最後在最後一行try_files，如果 URL 與任何靜態資源都不匹配，就會返回 index.html 頁面，從而解決這問題。
+在 WEB 端方面，首先會將寫好的 VUE 檔案做編譯，放入 NGINX 資料夾中，利用上面的 CODE 代理靜態檔案。在執行測試時，在頁面轉換上有遇到 404 PAGE NOT FOUND 的問題，上網查了資料，原來因為我使用的 VUE-ROUTER 模式是 HTML5 MODE，官網資料是說，若用戶直接在瀏覽器下訪問路徑，BROWSER 會直接訪問 WEB 端，而 WEB 端會找不到資料就會回傳 404 ERROR。為解決這問題，透過最後一行的try_files，如果 URL 與任何靜態資源都不匹配，就會返回 index.html 頁面，從而解決這問題。
 
 * * *
 
