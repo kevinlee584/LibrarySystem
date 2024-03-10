@@ -3,7 +3,19 @@ services:
   db:
     build:
       context: ./DB
+  backend1:
+    build:
+      context: ./backend
+    depends_on:
+      - db
+  backend2:
+    build:
+      context: ./backend
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: ./frontend
     ports:
-      - '3306:3306'
-    
+      - '8080:80'
       
