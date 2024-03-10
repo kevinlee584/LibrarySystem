@@ -25,6 +25,7 @@
 <script>
 import axios from "axios";
 import MyHeader from './MyHeader.vue'
+import config from '../config'
 
 export default {
     name: 'Book',
@@ -46,7 +47,7 @@ export default {
 
             await axios({
                 method: "put",
-                url: "http://localhost:8090/book/borrow",
+                url: config.url + "/book/borrow",
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data", Authorization: "Bearer " + localStorage.getItem("token") },
             }).then(r => {
@@ -59,11 +60,11 @@ export default {
     },
     async mounted() {
         let isbn = this.$route.query.ISBN
-        let book = (await axios.get("http://localhost:8090/book/" + isbn)).data;
+        let book = (await axios.get(config.url + "/book/" + isbn)).data;
         this.book = book;
 
         if (book != "") {
-            let inventory = (await axios.get("http://localhost:8090/book/inv/" + isbn)).data;
+            let inventory = (await axios.get(config.url + "/book/inv/" + isbn)).data;
             this.inventory = inventory;
         } else {
             this.$router.push({ name: "Home" });

@@ -15,6 +15,7 @@
 <script>
 import axios from 'axios'
 import MyHeader from './MyHeader.vue'
+import config from '../config'
 
 export default {
     name: 'LogIn',
@@ -38,7 +39,7 @@ export default {
 
             await axios({
                 method: "post",
-                url: "http://localhost:8090/signin",
+                url: config.url + "/signin",
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data" },
             }).then(res => {

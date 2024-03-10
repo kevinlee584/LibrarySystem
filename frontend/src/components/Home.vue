@@ -19,6 +19,7 @@
 <script>
 import axios from "axios";
 import MyHeader from './MyHeader.vue'
+import config from "../config";
 export default {
     name: 'Home',
     components: {
@@ -31,7 +32,7 @@ export default {
         }
     },
     async mounted() {
-        let books = (await axios.get("http://localhost:8090/book/all")).data;
+        let books = (await axios.get(config.url + "/book/all")).data;
         this.books = books;
     }
 

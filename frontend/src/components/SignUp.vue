@@ -16,6 +16,7 @@
 <script>
 import axios from 'axios'
 import MyHeader from './MyHeader.vue'
+import config from '../config'
 
 export default {
     name: 'SignUp',
@@ -41,7 +42,7 @@ export default {
 
             await axios({
                 method: "post",
-                url: "http://localhost:8090/signup",
+                url: config.url + "/signup",
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data" },
             }).then(() => {this.$router.push({ name: "Login" });}).catch(() => {window.alert("資料格式不正確");})

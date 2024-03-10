@@ -24,6 +24,7 @@
 <script>
 import axios from "axios";
 import MyHeader from './MyHeader.vue'
+import config from '../config'
 
 export default {
     name: 'Record',
@@ -42,16 +43,16 @@ export default {
 
             await axios({
                 method: "put",
-                url: "http://localhost:8090/book/return",
+                url: config.url + "book/return",
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data", Authorization: "Bearer " + localStorage.getItem("token") },
             }).then(async ()=> {
-                const r = await axios.get("http://localhost:8090/book/show/record", {
+                const r = await axios.get(config.url + "/book/show/record", {
                     headers: {
                         Authorization: "Bearer " + localStorage.getItem("token")
                     }
                 });
-                return this.inventory = r.data;
+                this.inventory = r.data;
             })
         }
     },
@@ -60,7 +61,7 @@ export default {
             window.alert("請先登入");
             this.$router.push({ name: "Login" });
         }else {
-            this.inventory = (await axios.get("http://localhost:8090/book/show/record", {
+            this.inventory = (await axios.get(config.url + "/book/show/record", {
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token")
                 }

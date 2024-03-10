@@ -26,9 +26,5 @@ class DemoApplicationTests {
 
 	@Test
 	void contextLoads2() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-		String s = jwtService.generateToken(new User("", "", "0936990321", ""));
-		System.out.println(s);
-		System.out.println();
-		System.out.println(jwtService.parseUserPhoneNumber(s));
 	}
 }
