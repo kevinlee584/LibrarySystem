@@ -17,16 +17,14 @@ public class UserService {
     private JwtService jwtService;
 
     public boolean addUser(String password,String username, String phoneNumber, String role) {
-        System.out.print(username.matches("^\\w{0,100}$"));
-        System.out.print(phoneNumber.matches("^\\d{10}$"));
-        if(!username.matches("^\\w{0,100}$") || !phoneNumber.matches("^\\d{10}$"))
+        if(!username.matches("^\\w{4,20}$") || !password.matches("^[\\da-zA-Z]{4,20}$") || !phoneNumber.matches("^\\d{10}$"))
             return false;
 
         return userRepository.signUp(passwordEncoder.encode(password), username, phoneNumber, role);
     }
 
     public String userSignIn(String password, String phoneNumber){
-        if(!phoneNumber.matches("^\\d{10}$"))
+        if(!password.matches("^[\\da-zA-Z]{4,20}$") || !phoneNumber.matches("^\\d{10}$"))
             return "";
 
         String token = jwtService.generateToken(phoneNumber);

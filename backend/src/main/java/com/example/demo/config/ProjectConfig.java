@@ -26,9 +26,21 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class ProjectConfig{
+
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "X-XSRF-TOKEN"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
     @Bean
     SecurityFilterChain SecurityFilterChain(HttpSecurity http, JwtAuthenticationFilter filter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/book/add", "/book/remove").hasRole("ADMIN")
                                 .requestMatchers("/book/borrow", "/book/return", "/book/show/record").hasAnyRole("ADMIN", "USER")

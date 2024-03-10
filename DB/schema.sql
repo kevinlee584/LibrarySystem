@@ -58,18 +58,14 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS user_signin;
 DELIMITER //
-CREATE PROCEDURE user_signin(IN PhoneNumber varchar(10), IN Password varchar(255), IN Token text)
+CREATE PROCEDURE user_signin(IN PhoneNumber varchar(10), IN Token text, OUT pw varchar(255))
 BEGIN
-    DECLARE correct int;
     DECLARE is_exist int;
     DECLARE id int;
     START TRANSACTION;
-        SET correct = (SELECT COUNT(*) FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber and `User`.`Password` = Password);
-        IF correct = 1 THEN
-            UPDATE `User`
-            SET `LastLoginTime` = NOW()
-            WHERE `User`.`PhoneNumber` = PhoneNumber;
-
+        SET pw = (SELECT `User`.`Password` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+        IF pw - NULL THEN
+            UPDATE `User` SET `LastLoginTime` = NOW() WHERE `User`.`PhoneNumber` = PhoneNumber;
             SET is_exist = (SELECT COUNT(*) FROM `JwtToken`, `User` WHERE `JwtToken`.`UserId` = `User`.`UserId`);
             SET id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
             IF is_exist = 0 THEN
@@ -111,6 +107,14 @@ BEGIN
     SELECT rc.`InventoryId`, rc.`Name`, rc.`Author`, rc.`Status`, `BorrowingRecord`.`BorrowTime`, `BorrowingRecord`.`ReturnTime` 
     FROM (SELECT `Book`.`Name`, `Book`.`Author`, `Inventory`.`InventoryId`, `Inventory`.`Status` FROM `Book`, `Inventory` WHERE `Book`.`ISBN` = ISBN and `Book`.`ISBN` = `Inventory`.`ISBN`) as rc
     LEFT JOIN `BorrowingRecord` ON rc.`InventoryId` = `BorrowingRecord`.`InventoryId`;
+END//
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS find_book_by_ISBN;
+DELIMITER //
+CREATE PROCEDURE find_book_by_ISBN(IN ISBN varchar(20))
+BEGIN
+    SELECT * FROM `Book` WHERE `Book`.`ISBN` = ISBN;
 END//
 DELIMITER ;
 
@@ -157,8 +161,8 @@ CREATE PROCEDURE borrow_book(IN PhoneNumber varchar(10), IN InventoryId int)
 BEGIN
     DECLARE is_allow varchar(15);
     DECLARE user_id int;
-    SELECT * FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE;
     START TRANSACTION;
+        SELECT * FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE;
         SET is_allow = (SELECT `Status` FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId);
         IF is_allow = "ALLOWED" THEN
             SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
@@ -205,4 +209,5 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
 

@@ -49,6 +49,12 @@ public class BookService {
             return Collections.EMPTY_LIST;
         return bookRepository.getInventory(isbn);
     }
+
+    public Book getBook(String isbn) {
+        if(!(isbn.matches("^\\d{3}-\\d-\\d{4}-\\d{4}-\\d$") || isbn.matches("^\\d-\\d{4}-\\d{4}-\\d{1}$")))
+            return null;
+        return bookRepository.getBook(isbn);
+    }
     public List<Record> getRecords(String phoneNumber) {
         if(!phoneNumber.matches("^\\d{10}$"))
             return Collections.EMPTY_LIST;

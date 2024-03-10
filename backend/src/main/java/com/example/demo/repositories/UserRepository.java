@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -18,6 +19,9 @@ import java.util.*;
 public class UserRepository {
     @Autowired
     private JdbcTemplate template;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     public boolean signUp(String password, String username, String phoneNumber, String role){
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signup");
@@ -35,16 +39,13 @@ public class UserRepository {
         }
     }
     public boolean signIn(String password, String phoneNumber, String token) {
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
 
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", phoneNumber)
-                .addValue("Password", password)
                 .addValue("Token", token);
-
         try {
-            simpleJdbcCall.execute(in);
-            return true;
+            return passwordEncoder.matches(password, (String)simpleJdbcCall.execute(in).get("pw"));
         }catch (Exception e){
             return false;
         }
@@ -58,7 +59,7 @@ public class UserRepository {
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", user.getPhoneNumber());
         try {
-            System.out.println(simpleJdbcCall.execute(in));
+            simpleJdbcCall.execute(in);
             return true;
         }catch (Exception e){
             return false;

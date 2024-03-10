@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
-@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "Requestor-Type", exposedHeaders = "X-Get-Header")
 @RestController
 public class authController {
 
@@ -37,7 +36,7 @@ public class authController {
                                     @RequestParam(value="phoneNumber") String phoneNumber) {
 
         if (userService.addUser(password, username, phoneNumber, "ROLE_USER")) {
-            return ResponseEntity.ok().body("signup success");
+            return ResponseEntity.status(HttpStatus.CREATED).body("signup success");
         }else
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("This PhoneNumber has been used");
 

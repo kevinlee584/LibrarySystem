@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
+
 @RestController
 @RequestMapping("/book")
 public class bookController {
@@ -56,10 +56,14 @@ public class bookController {
         return bookService.getAllBooks();
     }
 
-    @GetMapping("/{isbn}")
+    @GetMapping("/inv/{isbn}")
     public List<Record> showInventoryByISBN(@PathVariable(value="isbn") String isbn){
-        System.out.print(isbn);
         return bookService.getInventory(isbn);
+    }
+
+    @GetMapping("/{isbn}")
+    public Book showBookByISBN(@PathVariable(value="isbn") String isbn){
+        return bookService.getBook(isbn);
     }
 
     @GetMapping("/show/record")

@@ -67,6 +67,22 @@ public class BookRepository {
         return (List<Record>)(out.get("mapRef"));
     }
 
+    public Book getBook(String isbn) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
+                .withProcedureName("find_book_by_ISBN")
+                .returningResultSet("mapRef", (rs, rowNum) -> {
+                    String name = rs.getString("Name");
+                    String author = rs.getString("Author");
+                    String introduction = rs.getString("Introduction");
+                    return new Book(isbn, name, author, introduction);
+                });
+
+        SqlParameterSource in = new MapSqlParameterSource().addValue("ISBN", isbn);
+        Map<String, Object> out = simpleJdbcCall.execute(in);
+        List<Book> books = (List<Book>)out.get("mapRef");
+        return books.size() == 0 ? null : books.get(0);
+    }
+
     public boolean borrowBook(Integer inventoryId, String phoneNumber) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("borrow_book")
