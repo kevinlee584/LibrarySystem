@@ -34,7 +34,7 @@ image::imgs/arch.png[]
 
 === [.red]#WEB 端#
 image::imgs/code-snapshotA.png[]
-在 WEB 端方面，首先會將寫好的 VUE 檔案做編譯，放入 NGINX 資料夾中，利用上面的 CODE 代理靜態檔案，但在這裡首先會遇到的問題是會出現 404 NOT FOUND 頁面，因為我使用的 ROUTER 模式是 HTML5 MODE，根據官網資料，若用戶直接在瀏覽器下訪問，會直接訪問 WEB 端，WEB 端找不到資料就會回傳 404 ERROR， 透過最後一行的 try_files，如果 URL 與任何靜態資源都不匹配，就會返回 index.html 頁面，來解決這問題。
+在 WEB 端方面，首先會將寫好的 VUE 檔案做編譯，放入 NGINX 資料夾中，利用上面的 CODE 代理靜態檔案。在執行測試時，在頁面轉換上有遇到 404 PAGE NOT FOUND 的問題，上網查了資料，原來因為我使用的 VUE-ROUTER 模式是 HTML5 MODE，官網資料是說，若用戶直接在瀏覽器下訪問路徑，BROWSER 會直接訪問 WEB 端，而 WEB 端會找不到資料就會回傳 404 ERROR。為了解決這問題，透過最後在最後一行try_files，如果 URL 與任何靜態資源都不匹配，就會返回 index.html 頁面，從而解決這問題。
 
 * * *
 
@@ -53,11 +53,11 @@ image::imgs/code-snapshotD.png[]
 
 image::imgs/code-snapshotE.png[]
 
-為了建立 RESTFUL 伺服器，使用 JWT Token 作為使用者授權機制。當使用者登入成功時，會派發給對方一個 Token，並且這個 Token 使用公鑰做加密保護。
+為了建立 RESTful 伺服器，使用 JWT Token 作為使用者授權機制。當使用者登入成功時，會派發給對方一個 Token，並且這個 Token 使用公鑰做加密保護。
 
 image::imgs/code-snapshotF.png[]
 
-當使用者要做借還書這種要檢驗身分動做時，會將 Token 放入 Authorization Header 並做出請求，等 APP 收到請求後，會取出 Authorization Header 的值。
+當使用者要做借還書這種要檢驗身分動做時，會將 Token 放入 Authorization Header 並出請求，等 APP Server 收到請求後，會取出 Authorization Header 的值。
 
 image::imgs/code-snapshotG.png[]
 
