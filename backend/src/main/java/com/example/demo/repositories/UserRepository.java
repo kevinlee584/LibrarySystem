@@ -38,14 +38,15 @@ public class UserRepository {
             return false;
         }
     }
-    public boolean signIn(String password, String phoneNumber, String token) {
+    public boolean signIn(String rawPassword, String phoneNumber, String token) {
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", phoneNumber)
                 .addValue("Token", token);
         try {
-            return passwordEncoder.matches(password, (String)simpleJdbcCall.execute(in).get("pw"));
+            String storedPassword = (String)simpleJdbcCall.execute(in).get("pw");
+            return passwordEncoder.matches(rawPassword, storedPassword);
         }catch (Exception e){
             return false;
         }

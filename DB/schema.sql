@@ -104,9 +104,11 @@ DROP PROCEDURE IF EXISTS find_inventory_by_ISBN;
 DELIMITER //
 CREATE PROCEDURE find_inventory_by_ISBN(IN ISBN varchar(20))
 BEGIN
-    SELECT rc.`InventoryId`, rc.`Name`, rc.`Author`, rc.`Status`, `BorrowingRecord`.`BorrowTime`, `BorrowingRecord`.`ReturnTime` 
-    FROM (SELECT `Book`.`Name`, `Book`.`Author`, `Inventory`.`InventoryId`, `Inventory`.`Status` FROM `Book`, `Inventory` WHERE `Book`.`ISBN` = ISBN and `Book`.`ISBN` = `Inventory`.`ISBN`) as rc
-    LEFT JOIN `BorrowingRecord` ON rc.`InventoryId` = `BorrowingRecord`.`InventoryId`;
+    START TRANSACTION;
+        SELECT rc.`InventoryId`, rc.`Name`, rc.`Author`, rc.`Status`, `BorrowingRecord`.`BorrowTime`, `BorrowingRecord`.`ReturnTime` 
+        FROM (SELECT `Book`.`Name`, `Book`.`Author`, `Inventory`.`InventoryId`, `Inventory`.`Status` FROM `Book`, `Inventory` WHERE `Book`.`ISBN` = ISBN and `Book`.`ISBN` = `Inventory`.`ISBN`) as rc
+        LEFT JOIN `BorrowingRecord` ON rc.`InventoryId` = `BorrowingRecord`.`InventoryId`;
+    COMMIT;
 END//
 DELIMITER ;
 
