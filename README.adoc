@@ -30,7 +30,7 @@ docker compose up
 === [.red]#架構圖#
 image::imgs/arch.png[]
 
-若使用 docker compose 開啟，架構如上圖所示，利用 NGINX 做為 WEB 伺服器，作為靜態文件伺服器，並也作為負載平衡器，將流量分配到兩個伺服器上。資料庫方面，由兩個 APP 共同使用，且會自動載入測試資料。
+若使用 docker compose 開啟，架構如上圖所示，利用 NGINX 做為 WEB 伺服器，代理靜態文件伺服器，也作為負載平衡器，將流量分配到兩個伺服器上。資料庫方面，由兩個 APP 共同使用，且會自動載入測試資料。
 
 === [.red]#WEB 端#
 image::imgs/code-snapshotA.png[]
