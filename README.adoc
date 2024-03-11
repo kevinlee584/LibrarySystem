@@ -53,7 +53,7 @@ image::imgs/code-snapshotD.png[]
 
 image::imgs/code-snapshotE.png[]
 
-為了建立 RESTful 伺服器，使用 JWT Token 作為使用者授權機制。當使用者登入成功時，會派發給對方一個 Token，並且這個 Token 使用公鑰做加密保護。
+為了建立 RESTful 伺服器，使用 JWT Token 作為使用者授權機制。當使用者登入成功時，會派發給對方一個 Token，並且這個 Token 使用私鑰做加密保護。
 
 image::imgs/code-snapshotF.png[]
 
@@ -61,7 +61,7 @@ image::imgs/code-snapshotF.png[]
 
 image::imgs/code-snapshotG.png[]
 
-並利用私鑰作解密，來驗證其身分。
+並利用公鑰作解密，來驗證其身分。
 
 image::imgs/code-snapshotI.png[]
 
