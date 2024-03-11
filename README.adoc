@@ -40,7 +40,7 @@ image::imgs/code-snapshotA.png[]
 
 image::imgs/code-snapshotB.png[]
 在負載平衡器方面，利用上述代碼，會將流量分配到兩台伺服器上，在沒有設定情形下，使用 NGINX 預設方法 round-robin，若第一個請求分配到 serverA、第二個則會分配到 serverB、
-第二個則會分配到 serverA...，以此類推下去。
+第三個則會分配到 serverA...，以此類推下去。
 
 === [.red]#APP 端#
 image::imgs/code-snapshotC.png[]
