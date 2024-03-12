@@ -68,7 +68,6 @@ DROP PROCEDURE IF EXISTS user_signin;
 DELIMITER //
 CREATE PROCEDURE user_signin(IN PhoneNumber varchar(10), IN Token text)
 BEGIN
-    DECLARE is_exist int;
     DECLARE id int;
     START TRANSACTION;
         SET id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
@@ -94,9 +93,7 @@ DROP PROCEDURE IF EXISTS get_user_by_phone_number;
 DELIMITER //
 CREATE PROCEDURE get_user_by_phone_number(IN PhoneNumber varchar(10))
 BEGIN
-    START TRANSACTION;
-        SELECT * FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber;
-    COMMIT;
+    SELECT * FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber;
 END//
 DELIMITER ;
 
@@ -124,9 +121,7 @@ DROP PROCEDURE IF EXISTS update_inventory_status_by_InventoryId;
 DELIMITER //
 CREATE PROCEDURE update_inventory_status_by_InventoryId(IN InventoryId int, IN Status varchar(15))
 BEGIN
-    START TRANSACTION;
-        UPDATE `Inventory` SET `Inventory`.`Status` = Status WHERE `Inventory`.`InventoryId` = InventoryId;
-    COMMIT;
+    UPDATE `Inventory` SET `Inventory`.`Status` = Status WHERE `Inventory`.`InventoryId` = InventoryId;
 END//
 DELIMITER ;
 
@@ -145,9 +140,7 @@ DROP PROCEDURE IF EXISTS remove_book;
 DELIMITER //
 CREATE PROCEDURE remove_book(IN `InventoryId` int)
 BEGIN
-    START TRANSACTION;
-        DELETE FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId;
-    COMMIT;
+    DELETE FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId;
 END//
 DELIMITER ;
 
