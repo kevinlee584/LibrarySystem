@@ -45,7 +45,7 @@ export default {
             }).then(res => {
                 localStorage.setItem("token", res.headers.getAuthorization())
                 this.$router.push({ name: "Home" });
-            }).catch(() => {window.alert("帳號或密碼錯誤");})
+            }).catch(e => {window.alert(e.response.data.split("|")[1]);})
             
         }
     }

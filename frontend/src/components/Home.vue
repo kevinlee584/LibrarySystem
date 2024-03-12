@@ -8,7 +8,7 @@
                 <th>ISBN</th>
             </tr>
             <tr v-for="book in books" :key="book.isbn">
-                <td><a v-bind:href="'/book?ISBN=' + book.isbn">{{ book.name }}</a></td>
+                <td><router-link :to="'/book?ISBN=' + book.isbn">{{ book.name }}</router-link></td>
                 <td>{{ book.author }}</td>
                 <td>{{ book.isbn }}</td>
             </tr>

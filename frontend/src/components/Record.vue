@@ -14,7 +14,7 @@
                 <td>{{ inv.bookName }}</td>
                 <td>{{ inv.author }}</td>
                 <td>{{ inv.borrowingTime }}</td>
-                <td v-if="inv.status=='BORROWED'"><a @click="returnBook(inv.inventoryId)">return</a></td>
+                <td v-if="inv.returnTime==null"><a @click="returnBook(inv.inventoryId)">return</a></td>
                 <td v-else></td>
             </tr>
         </table>
@@ -43,7 +43,7 @@ export default {
 
             await axios({
                 method: "put",
-                url: config.url + "book/return",
+                url: config.url + "/book/return",
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data", Authorization: "Bearer " + localStorage.getItem("token") },
             }).then(async ()=> {

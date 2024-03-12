@@ -24,7 +24,7 @@ public class authController {
                                          @RequestParam(value="password") String password) {
         String jwtToken = userService.userSignIn(password, phoneNumber);
         if (jwtToken.isEmpty())
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("phoneNumber or password is incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("fail|電話或密碼錯誤");
         else {
             return ResponseEntity.ok().header("Authorization", jwtToken).body("");
         }
@@ -35,10 +35,13 @@ public class authController {
                                     @RequestParam(value="password") String password,
                                     @RequestParam(value="phoneNumber") String phoneNumber) {
 
-        if (userService.addUser(password, username, phoneNumber, "ROLE_USER")) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("signup success");
-        }else
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("This PhoneNumber has been used");
+        int code = userService.addUser(password, username, phoneNumber, "ROLE_USER");
 
+        if (code == 2) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("success");
+        }else if (code == 1)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("fail|電話已經被註冊");
+        else
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("fail|輸入資料格式錯誤");
     }
 }

@@ -45,7 +45,11 @@ export default {
                 url: config.url + "/signup",
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data" },
-            }).then(() => {this.$router.push({ name: "Login" });}).catch(() => {window.alert("資料格式不正確");})
+            })
+            .then(() => {
+                this.$router.push({ name: "Login" });
+            })
+            .catch(e => {window.alert(e.response.data.split('|')[1]);})
 
         }
     }

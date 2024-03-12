@@ -22,7 +22,7 @@ public class UserRepository {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    public boolean signUp(String password, String username, String phoneNumber, String role){
+    public int signUp(String password, String username, String phoneNumber, String role){
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signup");
 
@@ -33,20 +33,28 @@ public class UserRepository {
                 .addValue("Role", role);
         try {
             simpleJdbcCall.execute(in);
-            return true;
+            return 2;
         }catch (Exception e) {
-            return false;
+            return 1;
         }
     }
     public boolean signIn(String rawPassword, String phoneNumber, String token) {
 
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("PhoneNumber", phoneNumber)
-                .addValue("Token", token);
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("find_user_password");
+        SqlParameterSource in = new MapSqlParameterSource().addValue("PhoneNumber", phoneNumber);
+
         try {
             String storedPassword = (String)simpleJdbcCall.execute(in).get("pw");
-            return passwordEncoder.matches(rawPassword, storedPassword);
+            if (!passwordEncoder.matches(rawPassword, storedPassword))
+                return false;
+
+            simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("user_signin");
+            in = new MapSqlParameterSource()
+                    .addValue("PhoneNumber", phoneNumber)
+                    .addValue("Token", token);
+
+            simpleJdbcCall.execute(in);
+            return true;
         }catch (Exception e){
             return false;
         }

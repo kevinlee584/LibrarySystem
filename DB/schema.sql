@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `User` (
 
 CREATE TABLE IF NOT EXISTS `Inventory` (
     `InventoryId`       int          NOT NULL AUTO_INCREMENT,
-    `ISBN`              varchar(20)  NOT NULL UNIQUE,
+    `ISBN`              varchar(20)  NOT NULL,
     `StoreTime`         date         NOT NULL,
     `Status`            ENUM('ALLOWED', 'BORROWED', 'BUSY', 'LOST', 'DAMAGED', 'ABANDONED'),
     PRIMARY KEY(`InventoryId`)
@@ -40,7 +40,7 @@ CREATE INDEX iid on `BorrowingRecord` (`InventoryId`);
 
 CREATE TABLE IF NOT EXISTS `JwtToken` (
     `UserId`            int         NOT NULL,
-    `Token`             text NOT NULL,
+    `Token`             text        NOT NULL,
     PRIMARY KEY(`UserId`)
 );
 
@@ -56,24 +56,24 @@ BEGIN
 END//
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS find_user_password;
+DELIMITER //
+CREATE PROCEDURE find_user_password(IN PhoneNumber varchar(10), OUT pw varchar(255))
+BEGIN
+    SET pw = (SELECT `User`.`Password` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+END//
+DELIMITER ;
+
 DROP PROCEDURE IF EXISTS user_signin;
 DELIMITER //
-CREATE PROCEDURE user_signin(IN PhoneNumber varchar(10), IN Token text, OUT pw varchar(255))
+CREATE PROCEDURE user_signin(IN PhoneNumber varchar(10), IN Token text)
 BEGIN
     DECLARE is_exist int;
     DECLARE id int;
     START TRANSACTION;
-        SET pw = (SELECT `User`.`Password` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber FOR UPDATE);
-        IF pw IS NOT NULL THEN
-            UPDATE `User` SET `LastLoginTime` = NOW() WHERE `User`.`PhoneNumber` = PhoneNumber;
-            SET is_exist = (SELECT COUNT(*) FROM `JwtToken`, `User` WHERE `JwtToken`.`UserId` = `User`.`UserId`);
-            IF is_exist = 0 THEN
-                SET id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
-                INSERT INTO `JwtToken` (`UserId`, `Token`) VALUES (id, Token);
-            ELSE
-                UPDATE `JwtToken` SET `JwtToken`.`Token` = Token WHERE `JwtToken`.`UserId` = id;
-            END IF;
-        END IF;
+        SET id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+        UPDATE `User` SET `LastLoginTime` = NOW() WHERE `User`.`UserId` = id;
+        INSERT INTO `JwtToken` (`UserId`, `Token`) VALUES (id, Token) ON DUPLICATE KEY UPDATE `JwtToken`.`Token` = Token;
     COMMIT;
 END//
 DELIMITER ;
@@ -107,7 +107,7 @@ BEGIN
     START TRANSACTION;
         SELECT rc.`InventoryId`, rc.`Name`, rc.`Author`, rc.`Status`, `BorrowingRecord`.`BorrowTime`, `BorrowingRecord`.`ReturnTime` 
         FROM (SELECT `Book`.`Name`, `Book`.`Author`, `Inventory`.`InventoryId`, `Inventory`.`Status` FROM `Book`, `Inventory` WHERE `Book`.`ISBN` = ISBN and `Book`.`ISBN` = `Inventory`.`ISBN`) as rc
-        LEFT JOIN `BorrowingRecord` ON rc.`InventoryId` = `BorrowingRecord`.`InventoryId`;
+        LEFT JOIN `BorrowingRecord` ON rc.`InventoryId` = `BorrowingRecord`.`InventoryId` and `BorrowingRecord`.`ReturnTime` IS NULL;
     COMMIT;
 END//
 DELIMITER ;
@@ -134,15 +134,9 @@ DROP PROCEDURE IF EXISTS add_book;
 DELIMITER //
 CREATE PROCEDURE add_book(IN ISBN varchar(20), IN Name varchar(255), IN Author varchar(255), IN Introduction text, IN Status varchar(15))
 BEGIN
-    DECLARE is_exist int;
     START TRANSACTION;
-        SET is_exist = (SELECT COUNT(*) FROM `Book` WHERE `Book`.`ISBN` = ISBN);
-        IF is_exist = 1 THEN
-            INSERT INTO `Book`(`ISBN`, `Name`, `Author`, `Introduction`)
-            VALUES (ISBN, Name, Author, Introduction);
-        END IF;
-        INSERT INTO `Inventory`(`ISBN`, `StoreTime`, `Status`)
-        VALUES (ISBN, NOW(), Status);
+        INSERT IGNORE INTO `Book`(`ISBN`, `Name`, `Author`, `Introduction`) VALUES (ISBN, Name, Author, Introduction);
+        INSERT INTO `Inventory`(`ISBN`, `StoreTime`, `Status`) VALUES (ISBN, NOW(), Status);
     COMMIT;
 END//
 DELIMITER ;
@@ -218,7 +212,6 @@ BEGIN
     DECLARE user_id int;
     START TRANSACTION;
         SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
-
         SELECT `Inventory`.`InventoryId`, `Inventory`.`Status`, `Book`.`Name`, `Book`. `Author`, Record.`BorrowTime`, Record.`ReturnTime`
         FROM (SELECT * FROM `BorrowingRecord` WHERE `BorrowingRecord`.`UserId` = user_id) as Record, `Book`, `Inventory`
         WHERE  Record.`InventoryId`  = `Inventory`.`InventoryId` and `Inventory`.`ISBN` = `Book`.`ISBN`;

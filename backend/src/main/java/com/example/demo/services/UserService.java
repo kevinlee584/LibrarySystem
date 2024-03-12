@@ -16,9 +16,9 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
-    public boolean addUser(String password,String username, String phoneNumber, String role) {
+    public int addUser(String password,String username, String phoneNumber, String role) {
         if(!username.matches("^\\w{4,20}$") || !password.matches("^[\\da-zA-Z]{4,20}$") || !phoneNumber.matches("^\\d{10}$"))
-            return false;
+            return 0;
 
         return userRepository.signUp(passwordEncoder.encode(password), username, phoneNumber, role);
     }

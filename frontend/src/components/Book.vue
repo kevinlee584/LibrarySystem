@@ -44,6 +44,7 @@ export default {
             if (!localStorage.getItem("token")) {
                 window.alert("請先登入");
                 this.$router.push({ name: "Login" });
+                return;
             }
             var bodyFormData = new FormData()
             bodyFormData.append('inventoryId', id);
@@ -57,7 +58,11 @@ export default {
                 if (r.data == "success") window.alert("成功");
                 else window.alert("失敗");
                 this.$router.push({ name: "Home" });
-            })
+            }).catch(() => {
+                localStorage.removeItem("token");
+                window.alert("請重新登入");
+                this.$router.push({ name: "Login" });
+            });
 
         }
     },

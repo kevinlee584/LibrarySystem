@@ -2,10 +2,10 @@
     <header>
         <p>Library System</p>
         <ul class="nav_links">
-            <li><a href="./">Home</a></li>
-            <li><a href="./record">MyRecord</a></li>
-            <li v-if="isAuth()"><a @click="logout()" href="./">Logout</a></li>
-            <li v-else><a href="./login">Login</a></li>
+            <li><router-link :to="'./'">Home</router-link> </li>
+            <li><router-link :to="'./record'">MyRecord</router-link></li>
+            <li v-if="isAuth()"><router-link @click="logout()" :to="'./'">Logout</router-link></li>
+            <li v-else><router-link :to="'./login'">Login</router-link></li>
         </ul>
     </header>
 </template>
