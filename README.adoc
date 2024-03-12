@@ -100,7 +100,7 @@ image::imgs/code-snapshotM.png[, 90%, 80%, align=center]
 
 image::imgs/code-snapshotN.png[, 90%, 80%, align=center]
 
-借書時，會將 Inventory table 中要更新的 row 做 lock ，並確認其狀態是否為 ALLOWED ， 若其狀態為 ALLOWED ，就會對 Inventory 和 BorrowingRecord table 做更新和插入。而後面要借書的人會因為 *IF is_allow = "ALLOWED"* THEN 這行被擋下來。
+借書時，會將 Inventory table 中要更新的 row 做 lock ，並確認其狀態是否為 ALLOWED ， 若其狀態為 ALLOWED ，就會對 Inventory 和 BorrowingRecord table 做更新和插入。後面要借書的人會因為 *IF is_allow = "ALLOWED" THEN* 這行被擋下來。
 
 image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
 
