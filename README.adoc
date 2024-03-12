@@ -80,6 +80,8 @@ image::imgs/code-snapshotH.png[, 90%, 80%, align=center]
 
 === [.red]#資料庫#
 
+* * *
+
 image::imgs/code-snapshotJ.png[, 90%, 80%, align=center]
 
 為了避面同時有多人註冊，會有 Phone Number 出現重複的問題，這裡將 Phone Number 設置為 UNIQUE ，這樣當地二個使用相同 Phone Number 註冊時，會插入失敗。
