@@ -102,6 +102,14 @@ image::imgs/code-snapshotM.png[, 90%, 80%, align=center]
 
 對於可能多人同時借還書動作發生時，利用 Row Lock，來避免同時多人對同一本書做借還書。
 
+image::imgs/code-snapshotN.png[, 90%, 80%, align=center]
+
+借書時，會將 Inventory table 中要更新的 row 做 lock ，並確認其狀態是否為 ALLOWED ， 若其狀態為 ALLOWED ，就會對 Inventory 和 BorrowingRecord table 做更新和插入。而後面要借書的人會因為 *IF is_allow = "ALLOWED"* THEN 這行被擋下來。
+
+image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
+
+還書時，也會將 Inventory table 中要更新的 row 做 lock ，並檢查使用者在 BorrowingRecord 中是否有借書紀錄，就會對 Inventory 和 BorrowingRecord table 做更新。其中我先對 BorrowingRecord 先檢查是否存在紀錄，在對 Inventory 和 BorrowingRecord table 做更新，是為了防止使用者 A 對同本書傳送兩次 return request，結果中間有使用者 B 對同本書傳送 borrow request，這可能造成 Inventory table 的更新遺失，使得使用者 B 成功借到書，但書的狀態卻是 ALLOWED。
+
 === [.red]#DEMO#
 
 * * *
