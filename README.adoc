@@ -104,7 +104,7 @@ image::imgs/code-snapshotN.png[, 90%, 80%, align=center]
 
 image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
 
-還書時，也會將 Inventory table 中要更新的 row 做 lock ，並檢查使用者在 BorrowingRecord 中是否有借書紀錄，就會對 Inventory 和 BorrowingRecord table 做更新。其中我先對 BorrowingRecord 先檢查是否存在紀錄，在對 Inventory 和 BorrowingRecord table 做更新，是為了防止使用者 A 對同本書傳送兩次 return request，結果中間有使用者 B 對同本書傳送 borrow request，這可能造成 Inventory table 的更新遺失，使得使用者 B 成功借到書，但書的狀態卻是 ALLOWED。
+還書時，也會將 Inventory table 中要更新的 row 做 lock ，並檢查使用者在 BorrowingRecord 中是否有借書紀錄，若紀錄存在，就會對 Inventory 和 BorrowingRecord table 做更新。其中我先對 BorrowingRecord 先檢查是否存在紀錄，在對 Inventory 和 BorrowingRecord table 做更新，是為了防止使用者 A 對同本書傳送兩次 return request，結果中間有使用者 B 對同本書傳送 borrow request，這可能造成 Inventory table 的更新遺失，使得使用者 B 成功借到書，但書的狀態卻是 ALLOWED。
 
 === [.red]#DEMO#
 
