@@ -19,15 +19,14 @@
 
 [,bash]
 ----
-cd ./backend; ./gradlew build
+ $ cd ./backend; ./gradlew build
 ----
 
 啟動 SERVER  
 
 [,bash]
 ----
-
-docker compose up 
+ $ docker compose up 
 ----
 
 === [.red]#架構圖#
