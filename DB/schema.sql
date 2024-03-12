@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `User` (
 
 CREATE TABLE IF NOT EXISTS `Inventory` (
     `InventoryId`       int          NOT NULL AUTO_INCREMENT,
-    `ISBN`              varchar(20)  NOT NULL,
+    `ISBN`              varchar(20)  NOT NULL UNIQUE,
     `StoreTime`         date         NOT NULL,
     `Status`            ENUM('ALLOWED', 'BORROWED', 'BUSY', 'LOST', 'DAMAGED', 'ABANDONED'),
     PRIMARY KEY(`InventoryId`)
