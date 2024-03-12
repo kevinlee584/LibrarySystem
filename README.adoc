@@ -112,33 +112,33 @@ image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
 
 * 登入
 
-image::imgs/login.gif[, 90%, 80%, align=center]
+image::imgs/gif/login.gif[, 90%, 80%, align=center]
 
 
 * * *
 
 * 登出
 
-image::imgs/logout.gif[, 90%, 80%, align=center]
+image::imgs/gif/logout.gif[, 90%, 80%, align=center]
 
 
 * * *
 
 * 註冊
 
-image::imgs/signUp.gif[, 90%, 80%, align=center]
+image::imgs/gif/signUp.gif[, 90%, 80%, align=center]
 
 
 * * *
 
 * 借書
 
-image::imgs/borrowBook.gif[, 90%, 80%, align=center]
+image::imgs/gif/borrowBook.gif[, 90%, 80%, align=center]
 
 
 * * *
 
 * 還書
 
-image::imgs/returnBook.gif[, 90%, 80%, align=center]
+image::imgs/gif/returnBook.gif[, 90%, 80%, align=center]
 
