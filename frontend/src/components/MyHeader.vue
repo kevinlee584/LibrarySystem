@@ -23,7 +23,8 @@ export default {
             return localStorage.getItem("token") != undefined
         },
         logout(){
-            return localStorage.clear();
+            localStorage.clear();
+            this.$forceUpdate();
         }
     }
 }
