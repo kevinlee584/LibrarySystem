@@ -100,7 +100,7 @@ image::imgs/code-snapshotL.png[, 90%, 80%, align=center]
 
 image::imgs/code-snapshotM.png[, 90%, 80%, align=center]
 
-對於可能多人同時借還書動作發生時，利用 Row Lock，來避免同時多人對同一本書做借還書。
+對於可能多人同時借還書動作發生時，利用 Row Lock，使得一次只能有一個人對一本書做借還書。
 
 image::imgs/code-snapshotN.png[, 90%, 80%, align=center]
 
