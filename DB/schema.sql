@@ -63,12 +63,12 @@ BEGIN
     DECLARE is_exist int;
     DECLARE id int;
     START TRANSACTION;
-        SET pw = (SELECT `User`.`Password` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
-        IF pw - NULL THEN
+        SET pw = (SELECT `User`.`Password` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber FOR UPDATE);
+        IF pw IS NOT NULL THEN
             UPDATE `User` SET `LastLoginTime` = NOW() WHERE `User`.`PhoneNumber` = PhoneNumber;
             SET is_exist = (SELECT COUNT(*) FROM `JwtToken`, `User` WHERE `JwtToken`.`UserId` = `User`.`UserId`);
-            SET id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
             IF is_exist = 0 THEN
+                SET id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
                 INSERT INTO `JwtToken` (`UserId`, `Token`) VALUES (id, Token);
             ELSE
                 UPDATE `JwtToken` SET `JwtToken`.`Token` = Token WHERE `JwtToken`.`UserId` = id;
@@ -84,7 +84,7 @@ CREATE PROCEDURE user_signout(IN PhoneNumber varchar(10))
 BEGIN
     DECLARE user_id int;
     START TRANSACTION;
-        SET user_id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber );
+        SET user_id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber FOR UPDATE);
         DELETE FROM `JwtToken` WHERE `JwtToken`.`UserId` = user_id;
     COMMIT;
 END//
@@ -159,17 +159,20 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS borrow_book;
 DELIMITER //
-CREATE PROCEDURE borrow_book(IN PhoneNumber varchar(10), IN InventoryId int)
+CREATE PROCEDURE borrow_book(IN PhoneNumber varchar(10), IN InventoryId int, OUT is_success boolean)
 BEGIN
     DECLARE is_allow varchar(15);
     DECLARE user_id int;
     START TRANSACTION;
-        SELECT * FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE;
-        SET is_allow = (SELECT `Status` FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId);
+        SET is_success = false;
+        SET is_allow = (SELECT `Status` FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE);
         IF is_allow = "ALLOWED" THEN
             SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
-            INSERT INTO `BorrowingRecord`(`UserId`, `InventoryId`, `BorrowTime`, `ReturnTime`) VALUES(user_id, InventoryId, NOW(), NULL);
-            UPDATE `Inventory` SET `Inventory`.`Status` = "BORROWED" WHERE `Inventory`.`InventoryId` = InventoryId;
+            IF user_id IS NOT NULL THEN
+                INSERT INTO `BorrowingRecord`(`UserId`, `InventoryId`, `BorrowTime`, `ReturnTime`) VALUES(user_id, InventoryId, NOW(), NULL);
+                UPDATE `Inventory` SET `Inventory`.`Status` = "BORROWED" WHERE `Inventory`.`InventoryId` = InventoryId;
+                SET is_success = true;
+            END IF;
         END IF;
     COMMIT;
 END//
@@ -177,14 +180,25 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS return_book;
 DELIMITER //
-CREATE PROCEDURE return_book(IN InventoryId int, IN PhoneNumber varchar(10))
+CREATE PROCEDURE return_book(IN InventoryId int, IN PhoneNumber varchar(10), OUT is_success boolean)
 BEGIN
+    DECLARE is_exist int;
     DECLARE user_id int;
+    DECLARE is_borrowed_by_user int;
     START TRANSACTION;
-        SELECT * FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE;
-        SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
-        UPDATE `BorrowingRecord` SET `BorrowingRecord`.`ReturnTime` = NOW() WHERE `BorrowingRecord`.`InventoryId` = InventoryId and `BorrowingRecord`.`UserId` = user_id;
-        UPDATE `Inventory` SET `Inventory`.`Status` = "ALLOWED" WHERE `Inventory`.`InventoryId` = InventoryId;
+        SET is_success = false;
+        SET is_exist = (SELECT COUNT(*) FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId FOR UPDATE);
+        IF is_exist = 1 THEN
+            SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+            IF user_id IS NOT NULL THEN
+                SET is_borrowed_by_user = (SELECT COUNT(*) FROM `BorrowingRecord` WHERE `BorrowingRecord`.`UserId` = user_id and `BorrowingRecord`.`InventoryId` = InventoryId and `BorrowingRecord`.`ReturnTime` = NULL);
+                IF is_borrowed_by_user IS NOT NULL THEN
+                    UPDATE `BorrowingRecord` SET `BorrowingRecord`.`ReturnTime` = NOW() WHERE `BorrowingRecord`.`InventoryId` = InventoryId and `BorrowingRecord`.`UserId` = user_id;
+                    UPDATE `Inventory` SET `Inventory`.`Status` = "ALLOWED" WHERE `Inventory`.`InventoryId` = InventoryId;
+                    SET is_success = true;
+                END IF;
+            END IF;
+        END IF;
     COMMIT;
 END//
 DELIMITER ;

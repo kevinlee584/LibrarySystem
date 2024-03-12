@@ -95,11 +95,12 @@ public class BookRepository {
                 .addValue("PhoneNumber", phoneNumber)
                 .addValue("InventoryId", inventoryId);
         try {
-            List<String> out = (List<String>)simpleJdbcCall.execute(in).get("mapRef");
-            if(out.size() == 1){
-                return out.get(0).equals("ALLOWED");
-            }
-            return false;
+//            List<String> out = (List<String>)simpleJdbcCall.execute(in).get("mapRef");
+//            if(out.size() == 1){
+//                return out.get(0).equals("ALLOWED");
+//            }
+//            return false;
+            return (boolean) simpleJdbcCall.execute(in).get("is_success");
         }catch (Exception e) {
             return false;
         }

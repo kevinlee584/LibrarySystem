@@ -41,7 +41,10 @@ export default {
     },
     methods:{
         async borrowBook(id){
-
+            if (!localStorage.getItem("token")) {
+                window.alert("請先登入");
+                this.$router.push({ name: "Login" });
+            }
             var bodyFormData = new FormData()
             bodyFormData.append('inventoryId', id);
 
