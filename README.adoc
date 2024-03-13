@@ -109,13 +109,10 @@ image::imgs/code-snapshotN.png[, 90%, 80%, align=center]
 |使用者2借書本4
 
 |TRANSACTION 1
+|
+
+|
 |TRANSACTION 2
-
-|使用者1開始交易
-|
-
-|
-|使用者2開始交易
 
 |查詢書本4的狀態 +
 SET is_allow = (SELECT COUNT(\*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "ALLOWED" FOR UPDATE); + 
@@ -165,20 +162,34 @@ image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
 |查詢書本4的狀態 +
 SET is_borrow = (SELECT COUNT(*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "BORROWED");
 |
+|
+
+|
+|
 |查詢書本4的狀態 +
 SET is_borrow = (SELECT COUNT(*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "BORROWED");
 
 |書本4的狀態為 BORROWED，查詢使用者 ID +
 SET user_id = (SELECT \`User`.\`UserId` FROM \`User` WHERE \`User`.\`PhoneNumber` = PhoneNumber);
 |
+|
+
+|
+|
 |書本4的狀態為 BORROWED，查詢使用者 ID +
 SET user_id = (SELECT \`User`.\`UserId` FROM \`User` WHERE \`User`.\`PhoneNumber` = PhoneNumber);
 
 |使用者存在，查詢是否有書本4借書紀錄 +
 SET is_borrowed_by_user = (SELECT COUNT(*) FROM \`BorrowingRecord` WHERE \`BorrowingRecord`.\`UserId` = user_id and \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`ReturnTime` = NULL);
 |
+|
+
+|
+|
 |使用者存在，查詢是否有書本4借書紀錄 +
 SET is_borrowed_by_user = (SELECT COUNT(*) FROM \`BorrowingRecord` WHERE \`BorrowingRecord`.\`UserId` = user_id and \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`ReturnTime` = NULL);
+
+
 
 |有借書紀錄，更新 BorrowingRecord 和 Inventory table +
 UPDATE \`BorrowingRecord` SET \`BorrowingRecord`.\`ReturnTime` = NOW() WHERE \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`UserId` = ser_id; +
