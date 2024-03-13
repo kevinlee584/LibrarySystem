@@ -84,7 +84,8 @@ image::imgs/code-snapshotH.png[, 90%, 80%, align=center]
 
 image::imgs/code-snapshotJ.png[, 90%, 80%, align=center]
 
-為了避面同時有多人註冊，會有 Phone Number 出現重複的問題，這裡將 Phone Number 設置為 UNIQUE ，這樣當第二個使用相同 Phone Number 註冊時，會插入失敗。
+為了避面同時有多人註冊，會有 Phone Number 出現重複的問題，這裡將 Phone Number 設置為 UNIQUE ，這樣當第二個使用相同 Phone Number 註冊時，會插入失敗。 +
+在操作方面，由於會需要大量用 PhoneNumber 查詢 UserId ，因此對 PhoneNumber 建立 INDEX。
 
 * * *
 
@@ -98,13 +99,116 @@ image::imgs/code-snapshotM.png[, 90%, 80%, align=center]
 
 對於可能多人同時借還書動作發生時，利用 Row Lock，使得一次只能有一個人對一本書做借還書。
 
+* * *
+
 image::imgs/code-snapshotN.png[, 90%, 80%, align=center]
 
-借書時，會將 Inventory table 中要更新的 row 做 lock ，並確認其狀態是否為 ALLOWED ， 若其狀態為 ALLOWED ，就會對 Inventory 和 BorrowingRecord table 做更新和插入。後面要借書的人會因為 *IF is_allow = "ALLOWED" THEN* 這行被擋下來。
+[cols="1,1"]
+|===
+
+|使用者1借書本4
+|使用者2借書本4
+
+|TRANSACTION 1
+|TRANSACTION 2
+
+|使用者1開始交易
+|
+
+|
+|使用者2開始交易
+
+|查詢書本4的狀態 +
+SET is_allow = (SELECT COUNT(\*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "ALLOWED" FOR UPDATE); + 
+|
+
+|
+|查詢書本4的狀態 +
+SET is_allow = (SELECT COUNT(\*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "ALLOWED" FOR UPDATE); + 
+`__阻塞__`
+
+|書本狀態是 "ALLOWED" 且 user_id 是存在 +
+對 BorrowingRecord 插入新紀錄，且更新 Inventory 中的狀態為 BORROWED +
+INSERT INTO \`BorrowingRecord`(\`UserId`, \`InventoryId`, \`BorrowTime`, \`ReturnTime`) VALUES(user_id, InventoryId, NOW(), NULL); +
+UPDATE \`Inventory` SET \`Inventory`.\`Status` = "BORROWED" WHERE \`Inventory`.\`InventoryId` = InventoryId;
+| `__阻塞__`
+
+| COMMIT;
+| `__阻塞__`
+
+|
+|is_allow 是 NULL，代表書本狀態不為 ALLOWED 所以 IF THEN ... END 並不會執行。
+
+|
+| COMMIT;
+
+|=== 
+
+借書時，會將 Inventory table 中要更新的 row 做 lock ，並確認其狀態是否為 ALLOWED ，若其狀態為 ALLOWED ，接著檢查使用者 ID 是否存在，接著就會對 Inventory 和 BorrowingRecord table 做更新和插入。後面要借書的人會因為 *IF is_allow = "ALLOWED" THEN* 這行被擋下來。 
+
+* * *
 
 image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
 
-還書時，也會將 Inventory table 中要更新的 row 做 lock ，並檢查使用者在 BorrowingRecord 中是否有借書紀錄，若紀錄存在，就會對 Inventory 和 BorrowingRecord table 做更新。其中我先對 BorrowingRecord 先檢查是否存在紀錄，在對 Inventory 和 BorrowingRecord table 做更新，是為了防止使用者 A 對同本書傳送兩次 return request，結果中間有使用者 B 對同本書傳送 borrow request，這可能造成 Inventory table 的更新遺失，使得使用者 B 成功借到書，但書的狀態卻是 ALLOWED。
+還書時，會將 Inventory table 中要更新的 row 做 lock ，並確認其狀態是否為 BORROWED ，若其狀態為 BORROWED，接著檢查使用者 ID 是否存在，再檢查此使用者在 BorrowingRecord 中是否有借書紀錄，接著就對 BorrowingRecord 和 Inventtory 做更新。
+
+[cols="1,1,1"]
+|=== 
+
+|使用者1還書本4
+|使用者2借書本4
+|使用者1還書本4
+
+|TRANSACTION 1
+|
+|TRANSACTION 3
+
+|查詢書本4的狀態 +
+SET is_borrow = (SELECT COUNT(*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "BORROWED");
+|
+|查詢書本4的狀態 +
+SET is_borrow = (SELECT COUNT(*) FROM \`Inventory` WHERE \`Inventory`.\`InventoryId` = 4 and \`Inventory`.\`Status` = "BORROWED");
+
+|書本4的狀態為 BORROWED，查詢使用者 ID +
+SET user_id = (SELECT \`User`.\`UserId` FROM \`User` WHERE \`User`.\`PhoneNumber` = PhoneNumber);
+|
+|書本4的狀態為 BORROWED，查詢使用者 ID +
+SET user_id = (SELECT \`User`.\`UserId` FROM \`User` WHERE \`User`.\`PhoneNumber` = PhoneNumber);
+
+|使用者存在，查詢是否有書本4借書紀錄 +
+SET is_borrowed_by_user = (SELECT COUNT(*) FROM \`BorrowingRecord` WHERE \`BorrowingRecord`.\`UserId` = user_id and \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`ReturnTime` = NULL);
+|
+|使用者存在，查詢是否有書本4借書紀錄 +
+SET is_borrowed_by_user = (SELECT COUNT(*) FROM \`BorrowingRecord` WHERE \`BorrowingRecord`.\`UserId` = user_id and \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`ReturnTime` = NULL);
+
+|有借書紀錄，更新 BorrowingRecord 和 Inventory table +
+UPDATE \`BorrowingRecord` SET \`BorrowingRecord`.\`ReturnTime` = NOW() WHERE \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`UserId` = ser_id; +
+UPDATE \`Inventory` SET \`Inventory`.\`Status` = "ALLOWED" WHERE \`Inventory`.\`InventoryId` = 4;
+|
+|
+
+|COMMIT;
+|
+|
+
+|
+|TRANSACTION 2
+|
+
+|
+|使用者2執行借書操作，並成功 COMMIT;
+|
+
+|
+|
+|有借書紀錄，更新 BorrowingRecord 和 Inventory table +
+UPDATE \`BorrowingRecord` SET \`BorrowingRecord`.\`ReturnTime` = NOW() WHERE \`BorrowingRecord`.\`InventoryId` = 4 and \`BorrowingRecord`.\`UserId` = ser_id; +
+UPDATE \`Inventory` SET \`Inventory`.\`Status` = "ALLOWED" WHERE \`Inventory`.\`InventoryId` = 4; +
+`__ERROR__`
+
+|=== 
+
+在執行還書操作，會將 Inventory table 中要更新的 row 做 lock，是為了避免上面的狀況發生。若使用者因操作 API 問題，執行兩次還書操作，這中間又有人借同本書。就可能發生上面狀況，使得使用者2成功借到書本4，但書本4的狀態卻是 ALLOWED 的問題。
 
 === [.red]#DEMO#
 
@@ -141,4 +245,4 @@ image::imgs/gif/borrowBook.gif[, 90%, 80%, align=center]
 * 還書
 
 image::imgs/gif/returnBook.gif[, 90%, 80%, align=center]
-
+ 
