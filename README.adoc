@@ -157,6 +157,10 @@ image::imgs/code-snapshotO.png[, 90%, 80%, align=center]
 
 |TRANSACTION 1
 |
+|
+
+|
+|
 |TRANSACTION 3
 
 |查詢書本4的狀態 +
