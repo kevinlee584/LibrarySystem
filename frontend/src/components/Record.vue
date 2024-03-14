@@ -1,41 +1,42 @@
 <template>
     <MyHeader></MyHeader>
-    <div class="block">
-        <table border="1">
+    <div class="block recordBlock">
+        <table v-if="inventory.length != 0">
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Autour</th>
-                <th>BorrowingTime</th>
-                <th>return</th>
+                <th class="recordThID">ID</th>
+                <th class="recordThName">書名</th>
+                <th class="recordThAuthor">作者</th>
+                <th class="recordThTime">借書時間</th>
+                <th></th>
             </tr>
             <tr v-for="inv in inventory" :key="inv.inventoryId">
                 <td>{{ inv.inventoryId }}</td>
                 <td>{{ inv.bookName }}</td>
                 <td>{{ inv.author }}</td>
                 <td>{{ inv.borrowingTime }}</td>
-                <td v-if="inv.returnTime==null"><a @click="returnBook(inv.inventoryId)">return</a></td>
+                <td v-if="inv.returnTime==null"><a @click="returnBook(inv.inventoryId)">還書</a></td>
                 <td v-else></td>
             </tr>
         </table>
+        <div v-else><h1>尚未有借書紀錄</h1></div>
     </div>
 </template>
 
 <script>
 import axios from "axios";
-import MyHeader from './MyHeader.vue'
 import config from '../config'
 import convertTime from '../utils/convertTime'
+import MyHeader from "./MyHeader.vue";
 
 export default {
     name: 'Record',
-    components: {
-        MyHeader
-    },
     data() {
         return {
             inventory:[]
         }
+    },
+    components: {
+        MyHeader
     },
     methods:{
         async returnBook(id){
@@ -87,3 +88,34 @@ export default {
     },
 }
 </script>
+
+<style>
+    .recordBlock{
+        width: 850px;
+    }
+
+    .recordBlock tr {
+        border-bottom: #080808 solid 1px;
+    }
+
+    .recordBlock h1 {
+        text-align: center;
+
+    }
+
+    .recordThID{
+        width: 5%;
+    }
+
+    .recordThName{
+        width: 30%;
+    }
+
+    .recordThAuthor{
+        width: 20%;
+    }
+
+    .recordThTime{
+        width: 35%;
+    }
+</style>

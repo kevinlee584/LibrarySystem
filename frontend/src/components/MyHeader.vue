@@ -37,7 +37,11 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 5px 4%;
-    background-color: #333;
+    background: linear-gradient(
+        #22d35d,
+        #0e5836
+    );
+    border-bottom: #080808 solid 1px;
 }
 
 header p {
@@ -60,7 +64,7 @@ header p {
 
 .nav_links li a{
     transition: all 0.3s ease 0s;
-    font-size: 20px;
+    font-size: 30px;
     color: azure;
     text-decoration: none;
 }

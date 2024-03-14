@@ -14,19 +14,19 @@
 
 <script>
 import axios from 'axios'
-import MyHeader from './MyHeader.vue'
 import config from '../config'
+import MyHeader from './MyHeader.vue'
 
 export default {
     name: 'LogIn',
-    components: {
-        MyHeader
-    },
     data() {
         return {
             phoneNumber: '',
             password: ''
         }
+    },
+    components: {
+        MyHeader
     },
     methods: {
         redirectToSignUp() {
