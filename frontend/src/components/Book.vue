@@ -26,6 +26,7 @@
 import axios from "axios";
 import MyHeader from './MyHeader.vue'
 import config from '../config'
+import convertTime from "../utils/convertTime";
 
 export default {
     name: 'Book',
@@ -73,7 +74,10 @@ export default {
 
         if (book != "") {
             let inventory = (await axios.get(config.url + "/book/inv/" + isbn)).data;
-            this.inventory = inventory;
+            this.inventory = inventory.map(inv => {
+                inv.borrowingTime = convertTime(inv.borrowingTime);
+                return inv;
+            });
         } else {
             this.$router.push({ name: "Home" });
         }

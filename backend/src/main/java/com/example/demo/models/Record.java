@@ -1,16 +1,16 @@
 package com.example.demo.models;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Record {
     private Integer inventoryId;
     private String bookName;
     private String author;
     private String status;
-    private Date borrowingTime;
-    private Date returnTime;
+    private Timestamp borrowingTime;
+    private Timestamp returnTime;
 
-    public Record(Integer inventoryId, String bookName, String author, Date borrowingTime, Date returnTime, String status) {
+    public Record(Integer inventoryId, String bookName, String author, Timestamp borrowingTime, Timestamp returnTime, String status) {
         this.inventoryId = inventoryId;
         this.bookName = bookName;
         this.author = author;
@@ -43,19 +43,19 @@ public class Record {
         this.author = author;
     }
 
-    public Date getBorrowingTime() {
+    public Timestamp getBorrowingTime() {
         return borrowingTime;
     }
 
-    public void setBorrowingTime(Date borrowingTime) {
+    public void setBorrowingTime(Timestamp borrowingTime) {
         this.borrowingTime = borrowingTime;
     }
 
-    public Date getReturnTime() {
+    public Timestamp getReturnTime() {
         return returnTime;
     }
 
-    public void setReturnTime(Date returnTime) {
+    public void setReturnTime(Timestamp returnTime) {
         this.returnTime = returnTime;
     }
 

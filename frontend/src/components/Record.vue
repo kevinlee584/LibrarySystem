@@ -25,6 +25,7 @@
 import axios from "axios";
 import MyHeader from './MyHeader.vue'
 import config from '../config'
+import convertTime from '../utils/convertTime'
 
 export default {
     name: 'Record',
@@ -52,7 +53,10 @@ export default {
                         Authorization: "Bearer " + localStorage.getItem("token")
                     }
                 });
-                this.inventory = r.data;
+                this.inventory = r.data.map(inv => {
+                    inv.borrowingTime = convertTime(inv.borrowingTime);
+                    return inv;
+                });
             })
         }
     },
@@ -65,7 +69,10 @@ export default {
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token")
                 }
-            })).data;
+            })).data.map(inv => {
+                inv.borrowingTime = convertTime(inv.borrowingTime);
+                return inv;
+            });
         }
     },
 }

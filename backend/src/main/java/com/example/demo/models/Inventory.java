@@ -1,14 +1,14 @@
 package com.example.demo.models;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Inventory {
     private Integer id;
     private String ISBN;
-    private Date storeTime;
+    private Timestamp storeTime;
     private String statue;
 
-    public Inventory(Integer id, String ISBN, Date storeTime, String statue) {
+    public Inventory(Integer id, String ISBN, Timestamp storeTime, String statue) {
         this.id = id;
         this.ISBN = ISBN;
         this.storeTime = storeTime;
@@ -31,11 +31,11 @@ public class Inventory {
         this.ISBN = ISBN;
     }
 
-    public Date getStoreTime() {
+    public Timestamp getStoreTime() {
         return storeTime;
     }
 
-    public void setStoreTime(Date storeTime) {
+    public void setStoreTime(Timestamp storeTime) {
         this.storeTime = storeTime;
     }
 

@@ -1,9 +1,7 @@
 package com.example.demo.repositories;
 
 import com.example.demo.models.Book;
-import com.example.demo.models.Inventory;
 import com.example.demo.models.Record;
-import com.example.demo.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,7 +9,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -57,8 +55,8 @@ public class BookRepository {
                     String name = rs.getString("Name");
                     String author = rs.getString("Author");
                     String status = rs.getString("Status");
-                    Date borrowTime = rs.getDate("BorrowTime");
-                    Date returnTime = rs.getDate("ReturnTime");
+                    Timestamp borrowTime = rs.getTimestamp("BorrowTime");
+                    Timestamp returnTime = rs.getTimestamp("ReturnTime");
                     return new Record(inventoryId, name, author, borrowTime, returnTime, status);
                 });
 
@@ -122,8 +120,8 @@ public class BookRepository {
                     String name = rs.getString("Name");
                     String author = rs.getString("Author");
                     String status = rs.getString("Status");
-                    Date borrowTime = rs.getDate("BorrowTime");
-                    Date returnTime = rs.getDate("ReturnTime");
+                    Timestamp borrowTime = rs.getTimestamp("BorrowTime");
+                    Timestamp returnTime = rs.getTimestamp("ReturnTime");
                     return new Record(inventoryId, name, author, borrowTime, returnTime, status);
                 });
         SqlParameterSource in = new MapSqlParameterSource().addValue("PhoneNumber", phoneNumber);

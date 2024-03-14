@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS `User` (
     `PhoneNumber`        varchar(10)  NOT NULL,
     `Password`           varchar(255) NOT NULL,
     `UserName`           varchar(255) NOT NULL,
-    `RegistrationTime`   date         NOT NULL,
-    `LastLoginTime`      date,
+    `RegistrationTime`   datetime         NOT NULL,
+    `LastLoginTime`      datetime,
     `Role`               varchar(15)  NOT NULL,
     PRIMARY KEY(`UserId`)
 );
@@ -17,7 +17,7 @@ CREATE UNIQUE INDEX uph on `User` (`PhoneNumber`);
 CREATE TABLE IF NOT EXISTS `Inventory` (
     `InventoryId`       int          NOT NULL AUTO_INCREMENT,
     `ISBN`              varchar(20)  NOT NULL,
-    `StoreTime`         date         NOT NULL,
+    `StoreTime`         datetime         NOT NULL,
     `Status`            ENUM('ALLOWED', 'BORROWED', 'BUSY', 'LOST', 'DAMAGED', 'ABANDONED'),
     PRIMARY KEY(`InventoryId`)
 );
@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS `Book` (
 CREATE TABLE IF NOT EXISTS `BorrowingRecord` (
     `UserId`            int         NOT NULL,
     `InventoryId`       int         NOT NULL,
-    `BorrowTime`        date        NOT NULL,
-    `ReturnTime`        date
+    `BorrowTime`        datetime        NOT NULL,
+    `ReturnTime`        datetime
 );
 
 CREATE INDEX uid on `BorrowingRecord` (`UserId`);
