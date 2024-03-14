@@ -56,8 +56,7 @@ export default {
                 data: bodyFormData,
                 headers: { "Content-Type": "multipart/form-data", Authorization: "Bearer " + localStorage.getItem("token") },
             }).then(r => {
-                if (r.data.startsWith("success")) window.alert("成功");
-                else window.alert("失敗");
+                window.alert(r.data);
                 this.$router.push({ name: "Home" });
             }).catch(() => {
                 localStorage.removeItem("token");

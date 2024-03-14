@@ -1,10 +1,14 @@
 package com.example.demo.repositories;
 
 import com.example.demo.Exception.JwtTokenIsExpired;
+import com.example.demo.common.Message;
+import com.example.demo.common.MessageStatus;
+import com.example.demo.common.Pair;
 import com.example.demo.models.Book;
 import com.example.demo.models.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -22,6 +26,24 @@ public class BookRepository {
 
     @Autowired
     private JwtRepository jwtRepository;
+
+    private static final RowMapper<Book> bookRowMapper = (rs, rowNum) -> {
+        String isbn = rs.getString("ISBN");
+        String name = rs.getString("Name");
+        String author = rs.getString("Author");
+        String introduction = rs.getString("Introduction");
+        return new Book(isbn, name, author, introduction);
+    };
+
+    private static final RowMapper<Record> recordRowMapper = (rs, rowNum) -> {
+        Integer inventoryId = rs.getInt("InventoryId");
+        String name = rs.getString("Name");
+        String author = rs.getString("Author");
+        String status = rs.getString("Status");
+        Timestamp borrowTime = rs.getTimestamp("BorrowTime");
+        Timestamp returnTime = rs.getTimestamp("ReturnTime");
+        return new Record(inventoryId, name, author, borrowTime, returnTime, status);
+    };
 
     public void addBook(Book book, String status) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("add_book");
@@ -42,79 +64,61 @@ public class BookRepository {
     public List<Book> getAllBooks() {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("get_all_books")
-                .returningResultSet("mapRef", (rs, rowNum) -> {
-                    String isbn = rs.getString("ISBN");
-                    String name = rs.getString("Name");
-                    String author = rs.getString("Author");
-                    String introduction = rs.getString("Introduction");
-                    return new Book(isbn, name, author, introduction);
-                });
-        Map<String, Object> out = simpleJdbcCall.execute();
-        return (List<Book>)out.get("mapRef");
+                .returningResultSet("mapRef", bookRowMapper);
+
+        return (List<Book>)simpleJdbcCall.execute().get("mapRef");
     }
     public List<Record> getInventory(String isbn) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("find_inventory_by_ISBN")
-                .returningResultSet("mapRef", (rs, rowNum) -> {
-                    Integer inventoryId = rs.getInt("InventoryId");
-                    String name = rs.getString("Name");
-                    String author = rs.getString("Author");
-                    String status = rs.getString("Status");
-                    Timestamp borrowTime = rs.getTimestamp("BorrowTime");
-                    Timestamp returnTime = rs.getTimestamp("ReturnTime");
-                    return new Record(inventoryId, name, author, borrowTime, returnTime, status);
-                });
-
+                .returningResultSet("mapRef", recordRowMapper);
         SqlParameterSource in = new MapSqlParameterSource().addValue("ISBN", isbn);
-        Map<String, Object> out = simpleJdbcCall.execute(in);
-        return (List<Record>)(out.get("mapRef"));
+
+        return (List<Record>)(simpleJdbcCall.execute(in).get("mapRef"));
     }
 
     public Book getBook(String isbn) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("find_book_by_ISBN")
-                .returningResultSet("mapRef", (rs, rowNum) -> {
-                    String name = rs.getString("Name");
-                    String author = rs.getString("Author");
-                    String introduction = rs.getString("Introduction");
-                    return new Book(isbn, name, author, introduction);
-                });
+                .returningResultSet("mapRef", bookRowMapper);
 
         SqlParameterSource in = new MapSqlParameterSource().addValue("ISBN", isbn);
-        Map<String, Object> out = simpleJdbcCall.execute(in);
-        List<Book> books = (List<Book>)out.get("mapRef");
-        return books.size() == 0 ? null : books.get(0);
+        List<Book> books = (List<Book>)simpleJdbcCall.execute(in).get("mapRef");
+        return books.isEmpty() ? null : books.get(0);
     }
 
     @Transactional
-    public String borrowBook(Integer inventoryId, String phoneNumber) throws JwtTokenIsExpired {
+    public Message borrowBook(Integer inventoryId, String phoneNumber){
 
         boolean isExpired = jwtRepository.isJwtExpired(phoneNumber);
 
-        if(isExpired)  throw new JwtTokenIsExpired( "expired|請從新登入");
+        if(isExpired)
+            return new Message(MessageStatus.expired, "請從新登入");
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("borrow_book")
-                .returningResultSet("mapRef", (rs, rowNum) -> {
-                    String status = rs.getString("Status");
-                    return status;
-                });
+                .returningResultSet("mapRef", (rs, rowNum) -> rs.getString("Status"));
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", phoneNumber)
                 .addValue("InventoryId", inventoryId);
         try {
-            return (boolean) simpleJdbcCall.execute(in).get("is_success") ? "success|借書成功":"fail|借書失敗";
+            if ((boolean) simpleJdbcCall.execute(in).get("is_success"))
+                return new Message(MessageStatus.success, "借書成功");
+            else
+                return new Message(MessageStatus.fail, "借書失敗");
         }catch (Exception e) {
-            return "fail|借書失敗";
+            return new Message(MessageStatus.expired, "借書失敗");
         }
 
     }
 
     @Transactional
-    public String returnBook(Integer inventoryId, String phoneNumber) throws JwtTokenIsExpired {
+    public Message returnBook(Integer inventoryId, String phoneNumber){
+
         boolean isExpired = jwtRepository.isJwtExpired(phoneNumber);
 
-        if(isExpired)  throw new JwtTokenIsExpired( "expired|請從新登入");
+        if(isExpired)
+            return new Message(MessageStatus.expired, "請從新登入");
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("return_book");
         SqlParameterSource in = new MapSqlParameterSource()
@@ -122,32 +126,31 @@ public class BookRepository {
                 .addValue("PhoneNumber", phoneNumber);
         try {
             simpleJdbcCall.execute(in);
-            return "success|還書成功";
+            return new Message(MessageStatus.success, "還書成功");
         }catch (Exception e) {
-            return "fail|還書失敗";
+            return new Message(MessageStatus.fail, "還書失敗");
         }
     }
 
     @Transactional
-    public List<Record> getRecords(String phoneNumber) throws JwtTokenIsExpired{
+    public Pair<Message, List<Record>> getRecords(String phoneNumber){
         boolean isExpired = jwtRepository.isJwtExpired(phoneNumber);
 
-        if(isExpired)  throw new JwtTokenIsExpired( "expired|請從新登入");
+        if(isExpired)
+            return new Pair<>(new Message(MessageStatus.expired, "請從新登入"), null);
 
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("get_record_by_phone")
-                .returningResultSet("mapRef", (rs, rowNum) -> {
-                    Integer inventoryId = rs.getInt("InventoryId");
-                    String name = rs.getString("Name");
-                    String author = rs.getString("Author");
-                    String status = rs.getString("Status");
-                    Timestamp borrowTime = rs.getTimestamp("BorrowTime");
-                    Timestamp returnTime = rs.getTimestamp("ReturnTime");
-                    return new Record(inventoryId, name, author, borrowTime, returnTime, status);
-                });
+                .returningResultSet("mapRef", recordRowMapper);
+
         SqlParameterSource in = new MapSqlParameterSource().addValue("PhoneNumber", phoneNumber);
-        Map<String, Object> out = simpleJdbcCall.execute(in);
-        return (List<Record>)(out.get("mapRef"));
+        try {
+            return new Pair<>(new Message(MessageStatus.success, "成功"),(List<Record>)(simpleJdbcCall.execute(in).get("mapRef")));
+        }catch (Exception e) {
+            return new Pair<>(new Message(MessageStatus.fail, "失敗"), null);
+        }
+
+
     }
 
 }

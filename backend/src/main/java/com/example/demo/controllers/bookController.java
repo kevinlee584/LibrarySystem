@@ -1,5 +1,7 @@
 package com.example.demo.controllers;
 
+import com.example.demo.common.Message;
+import com.example.demo.common.MessageStatus;
 import com.example.demo.common.Pair;
 import com.example.demo.models.Book;
 import com.example.demo.models.Inventory;
@@ -41,27 +43,23 @@ public class bookController {
     @PutMapping("/borrow")
     public ResponseEntity<?> borrowBook(@RequestParam(value="inventoryId") Integer inventoryId,
                                         HttpServletRequest request) {
-        String log = bookService.borrowBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
-        if(log.matches("^success.*$")) {
-            return ResponseEntity.ok(log);
-        }else if(log.matches("^fail.*$")){
-            return ResponseEntity.ok(log);
-        }else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("");
-        }
+        Message log = bookService.borrowBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
+
+        return switch (log.getStatus()){
+            case success, fail -> ResponseEntity.ok(log.getMessage());
+            default -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(log.getMessage());
+        };
     }
 
     @PutMapping("/return")
     public ResponseEntity<?> returnBook(@RequestParam(value="inventoryId") Integer inventoryId,
                                         HttpServletRequest request) {
-        String log = bookService.returnBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
-        if(log.matches("^success.*$")) {
-            return ResponseEntity.ok(log);
-        }else if(log.matches("^fail.*$")){
-            return ResponseEntity.ok(log);
-        }else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("");
-        }
+        Message log = bookService.returnBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
+
+        return switch (log.getStatus()){
+            case success, fail -> ResponseEntity.ok(log.getMessage());
+            default -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(log.getMessage());
+        };
     }
 
     @GetMapping("/all")
@@ -81,12 +79,10 @@ public class bookController {
 
     @GetMapping("/show/record")
     public ResponseEntity<List<Record>> showBorrowedBooksByPhoneNumber(HttpServletRequest request){
-        Pair<String, List<Record>> pair = bookService.getRecords((String)request.getAttribute("PhoneNumber"));
-        if (pair.getLeft().matches("^success.*$"))
-            return ResponseEntity.ok(pair.getRight());
-        else if (pair.getLeft().matches("^fail.*$"))
-            return ResponseEntity.ok(pair.getRight());
-        else
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(pair.getRight());
+        Pair<Message, List<Record>> pair = bookService.getRecords((String)request.getAttribute("PhoneNumber"));
+        return switch (pair.getLeft().getStatus()){
+            case success, fail -> ResponseEntity.ok(pair.getRight());
+            default -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(pair.getRight());
+        };
     }
 }
