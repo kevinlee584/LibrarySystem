@@ -1,11 +1,14 @@
 package com.example.demo.controllers;
 
+import com.example.demo.common.Pair;
 import com.example.demo.models.Book;
 import com.example.demo.models.Inventory;
 import com.example.demo.models.Record;
 import com.example.demo.services.BookService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,17 +41,27 @@ public class bookController {
     @PutMapping("/borrow")
     public ResponseEntity<?> borrowBook(@RequestParam(value="inventoryId") Integer inventoryId,
                                         HttpServletRequest request) {
-        if (bookService.borrowBook(inventoryId, (String)request.getAttribute("PhoneNumber")))
-            return ResponseEntity.ok("success");
-        else
-            return ResponseEntity.ok("fail");
+        String log = bookService.borrowBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
+        if(log.matches("^success.*$")) {
+            return ResponseEntity.ok(log);
+        }else if(log.matches("^fail.*$")){
+            return ResponseEntity.ok(log);
+        }else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("");
+        }
     }
 
     @PutMapping("/return")
     public ResponseEntity<?> returnBook(@RequestParam(value="inventoryId") Integer inventoryId,
                                         HttpServletRequest request) {
-        bookService.returnBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
-        return ResponseEntity.ok("");
+        String log = bookService.returnBook(inventoryId, (String)request.getAttribute("PhoneNumber"));
+        if(log.matches("^success.*$")) {
+            return ResponseEntity.ok(log);
+        }else if(log.matches("^fail.*$")){
+            return ResponseEntity.ok(log);
+        }else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("");
+        }
     }
 
     @GetMapping("/all")
@@ -67,7 +80,13 @@ public class bookController {
     }
 
     @GetMapping("/show/record")
-    public List<Record> showBorrowedBooksByPhoneNumber(HttpServletRequest request){
-        return bookService.getRecords((String)request.getAttribute("PhoneNumber"));
+    public ResponseEntity<List<Record>> showBorrowedBooksByPhoneNumber(HttpServletRequest request){
+        Pair<String, List<Record>> pair = bookService.getRecords((String)request.getAttribute("PhoneNumber"));
+        if (pair.getLeft().matches("^success.*$"))
+            return ResponseEntity.ok(pair.getRight());
+        else if (pair.getLeft().matches("^fail.*$"))
+            return ResponseEntity.ok(pair.getRight());
+        else
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(pair.getRight());
     }
 }

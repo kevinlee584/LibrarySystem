@@ -1,5 +1,6 @@
 package com.example.demo.repositories;
 
+import com.example.demo.Exception.JwtTokenIsExpired;
 import com.example.demo.models.Book;
 import com.example.demo.models.Record;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -17,6 +19,9 @@ import java.util.Map;
 public class BookRepository {
     @Autowired
     private JdbcTemplate template;
+
+    @Autowired
+    private JwtRepository jwtRepository;
 
     public void addBook(Book book, String status) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("add_book");
@@ -81,38 +86,54 @@ public class BookRepository {
         return books.size() == 0 ? null : books.get(0);
     }
 
-    public boolean borrowBook(Integer inventoryId, String phoneNumber) {
+    @Transactional
+    public String borrowBook(Integer inventoryId, String phoneNumber) throws JwtTokenIsExpired {
+
+        boolean isExpired = jwtRepository.isJwtExpired(phoneNumber);
+
+        if(isExpired)  throw new JwtTokenIsExpired( "expired|請從新登入");
+
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("borrow_book")
                 .returningResultSet("mapRef", (rs, rowNum) -> {
                     String status = rs.getString("Status");
                     return status;
                 });
-
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("PhoneNumber", phoneNumber)
                 .addValue("InventoryId", inventoryId);
         try {
-//            List<String> out = (List<String>)simpleJdbcCall.execute(in).get("mapRef");
-//            if(out.size() == 1){
-//                return out.get(0).equals("ALLOWED");
-//            }
-//            return false;
-            return (boolean) simpleJdbcCall.execute(in).get("is_success");
+            return (boolean) simpleJdbcCall.execute(in).get("is_success") ? "success|借書成功":"fail|借書失敗";
         }catch (Exception e) {
-            return false;
+            return "fail|借書失敗";
         }
+
     }
 
-    public void returnBook(Integer inventoryId, String phoneNumber) {
+    @Transactional
+    public String returnBook(Integer inventoryId, String phoneNumber) throws JwtTokenIsExpired {
+        boolean isExpired = jwtRepository.isJwtExpired(phoneNumber);
+
+        if(isExpired)  throw new JwtTokenIsExpired( "expired|請從新登入");
+
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template).withProcedureName("return_book");
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("InventoryId", inventoryId)
                 .addValue("PhoneNumber", phoneNumber);
-        simpleJdbcCall.execute(in);
+        try {
+            simpleJdbcCall.execute(in);
+            return "success|還書成功";
+        }catch (Exception e) {
+            return "fail|還書失敗";
+        }
     }
 
-    public List<Record> getRecords(String phoneNumber) {
+    @Transactional
+    public List<Record> getRecords(String phoneNumber) throws JwtTokenIsExpired{
+        boolean isExpired = jwtRepository.isJwtExpired(phoneNumber);
+
+        if(isExpired)  throw new JwtTokenIsExpired( "expired|請從新登入");
+
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(template)
                 .withProcedureName("get_record_by_phone")
                 .returningResultSet("mapRef", (rs, rowNum) -> {

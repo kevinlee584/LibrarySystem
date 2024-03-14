@@ -1,12 +1,12 @@
 package com.example.demo.services;
 
+import com.example.demo.Exception.JwtTokenIsExpired;
+import com.example.demo.common.Pair;
 import com.example.demo.models.Book;
-import com.example.demo.models.Inventory;
 import com.example.demo.models.Record;
 import com.example.demo.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 public class BookService {
     private List<String> statuses = List.of("ALLOWED", "BORROWED", "BUSY", "LOST", "DAMAGED", "ABANDONED");
     @Autowired
-    BookRepository bookRepository;
+    private BookRepository bookRepository;
     public void addBook(String isbn, String name, String author, String introduction, String status) {
         if(!isbn.matches("^\\d{3}-\\d-\\d{4}-\\d{4}-\\d$") || !isbn.matches("^\\d-\\d{4}-\\d{4}-\\d{1}$"))
             return;
@@ -34,15 +34,23 @@ public class BookService {
     public List<Book> getAllBooks() {
         return bookRepository.getAllBooks();
     }
-    public boolean borrowBook(Integer inventoryId, String phoneNumber){
+    public String borrowBook(Integer inventoryId, String phoneNumber)  {
         if(!String.valueOf(inventoryId).matches("^\\d{0,50}$") || !String.valueOf(phoneNumber).matches("^\\d{10}$"))
-            return false;
-        return bookRepository.borrowBook(inventoryId, phoneNumber);
+            return "fail|資料格式錯誤";
+        try {
+            return bookRepository.borrowBook(inventoryId, phoneNumber);
+        } catch (JwtTokenIsExpired e) {
+            return e.getMessage();
+        }
     }
-    public void returnBook(Integer inventoryId, String phoneNumber){
+    public String returnBook(Integer inventoryId, String phoneNumber){
         if(!String.valueOf(inventoryId).matches("^\\d{0,50}$"))
-            return;
-        bookRepository.returnBook(inventoryId, phoneNumber);
+            return "fail|資料格式錯誤";
+        try {
+            return bookRepository.returnBook(inventoryId, phoneNumber);
+        } catch (JwtTokenIsExpired e) {
+            return e.getMessage();
+        }
     }
     public List<Record> getInventory(String isbn) {
         if(!(isbn.matches("^\\d{3}-\\d-\\d{4}-\\d{4}-\\d$") || isbn.matches("^\\d-\\d{4}-\\d{4}-\\d{1}$")))
@@ -55,9 +63,14 @@ public class BookService {
             return null;
         return bookRepository.getBook(isbn);
     }
-    public List<Record> getRecords(String phoneNumber) {
+    public Pair<String, List<Record>> getRecords(String phoneNumber) {
         if(!phoneNumber.matches("^\\d{10}$"))
-            return Collections.EMPTY_LIST;
-        return bookRepository.getRecords(phoneNumber);
+            return new Pair<>("fail|資料格式錯誤", Collections.EMPTY_LIST);
+
+        try {
+            return new Pair<>("success", bookRepository.getRecords(phoneNumber));
+        } catch (JwtTokenIsExpired e) {
+            return new Pair<>(e.getMessage(), Collections.EMPTY_LIST);
+        }
     }
 }

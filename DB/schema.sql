@@ -17,7 +17,7 @@ CREATE UNIQUE INDEX uph on `User` (`PhoneNumber`);
 CREATE TABLE IF NOT EXISTS `Inventory` (
     `InventoryId`       int          NOT NULL AUTO_INCREMENT,
     `ISBN`              varchar(20)  NOT NULL,
-    `StoreTime`         datetime         NOT NULL,
+    `StoreTime`         datetime     NOT NULL,
     `Status`            ENUM('ALLOWED', 'BORROWED', 'BUSY', 'LOST', 'DAMAGED', 'ABANDONED'),
     PRIMARY KEY(`InventoryId`)
 );
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `Book` (
 CREATE TABLE IF NOT EXISTS `BorrowingRecord` (
     `UserId`            int         NOT NULL,
     `InventoryId`       int         NOT NULL,
-    `BorrowTime`        datetime        NOT NULL,
+    `BorrowTime`        datetime    NOT NULL,
     `ReturnTime`        datetime
 );
 
@@ -43,6 +43,7 @@ CREATE INDEX iid on `BorrowingRecord` (`InventoryId`);
 CREATE TABLE IF NOT EXISTS `JwtToken` (
     `UserId`            int         NOT NULL,
     `Token`             text        NOT NULL,
+    `Expires`           datetime    NOT NULL,
     PRIMARY KEY(`UserId`)
 );
 
@@ -74,7 +75,7 @@ BEGIN
     START TRANSACTION;
         SET user_id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
         UPDATE `User` SET `LastLoginTime` = NOW() WHERE `User`.`UserId` = user_id;
-        INSERT INTO `JwtToken` (`UserId`, `Token`) VALUES (user_id, Token) ON DUPLICATE KEY UPDATE `JwtToken`.`Token` = Token;
+        INSERT INTO `JwtToken` (`UserId`, `Token`, `Expires`) VALUES (user_id, Token, date_add(NOW(),interval 5 minute)) ON DUPLICATE KEY UPDATE `JwtToken`.`Token` = Token, `JwtToken`.`Expires` = date_add(NOW(),interval 5 minute);
     COMMIT;
 END//
 DELIMITER ;
@@ -155,7 +156,7 @@ BEGIN
     START TRANSACTION;
         SET is_success = false;
         SET is_allow = (SELECT COUNT(*) FROM `Inventory` WHERE `Inventory`.`InventoryId` = InventoryId and `Inventory`.`Status` = "ALLOWED" FOR UPDATE);
-        IF is_allow IS NOT NULL THEN
+        IF is_allow IS true THEN
             SET user_id = (SELECT `User`.`UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
             IF user_id IS NOT NULL THEN
                 INSERT INTO `BorrowingRecord`(`UserId`, `InventoryId`, `BorrowTime`, `ReturnTime`) VALUES(user_id, InventoryId, NOW(), NULL);
@@ -225,5 +226,32 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS is_jwt_expired;
+DELIMITER //
+CREATE PROCEDURE is_jwt_expired(IN PhoneNumber varchar(10), OUT is_expired boolean)
+BEGIN
+    SET is_expired = (SELECT TIMESTAMPDIFF(SECOND, NOW(), `JwtToken`.`Expires`) < 0
+                        FROM `JwtToken`, `User` 
+                        WHERE `User`.`PhoneNumber` = PhoneNumber and `User`.`UserId` = `JwtToken`.`UserId`);
+    IF is_expired IS NULL THEN
+        SET is_expired = true;
+    END IF;
+END//
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS remove_jwt_token_by_phone;
+DELIMITER //
+CREATE PROCEDURE remove_jwt_token_by_phone(IN PhoneNumber varchar(10))
+BEGIN
+    DECLARE user_id int;
+    SET user_id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+    IF user_id IS NOT NULL THEN
+        DELETE FROM `JwtToken` WHERE `JwtToken`.`UserId` = user_id;
+    END IF;
+END//
+DELIMITER ;
+
 
 

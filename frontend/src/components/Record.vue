@@ -57,6 +57,10 @@ export default {
                     inv.borrowingTime = convertTime(inv.borrowingTime);
                     return inv;
                 });
+            }).catch(() => {
+                localStorage.removeItem("token");
+                window.alert("請重新登入");
+                this.$router.push({ name: "Login" });
             })
         }
     },
@@ -65,14 +69,20 @@ export default {
             window.alert("請先登入");
             this.$router.push({ name: "Login" });
         }else {
-            this.inventory = (await axios.get(config.url + "/book/show/record", {
+            await axios.get(config.url + "/book/show/record", {
                 headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token")
-                }
-            })).data.map(inv => {
-                inv.borrowingTime = convertTime(inv.borrowingTime);
-                return inv;
-            });
+                        Authorization: "Bearer " + localStorage.getItem("token")
+                    }
+                }).then(res => {
+                    this.inventory = res.data.map(inv => {
+                        inv.borrowingTime = convertTime(inv.borrowingTime);
+                        return inv;
+                    });
+                }).catch(() => {
+                    localStorage.removeItem("token");
+                    window.alert("請重新登入");
+                    this.$router.push({ name: "Login" });
+                });
         }
     },
 }
