@@ -76,13 +76,15 @@ Token 的存放則是交由資料庫處理。
 
 image::imgs/code-snapshotP.png[, 90%, 80%, align=center]
 
-且在資料庫創建 is_jwt_expired PROCEDURE ，來對使用者的 JwtToken 是否過期做判定。
+且在資料庫創建 is_jwt_expired PROCEDURE ，來判定使用者的 JwtToken 是否過期。
 
 image::imgs/code-snapshotQ.png[, 90%, 80%, align=center]
 
 每當使用者做借還書時，會先檢測使用者的登入狀態是否過期。
 
 image::imgs/exampleA.png[][, 90%, 80%, align=center]
+
+若過期，前端收到通知，就會提醒使用者從新登入。
 
 * * *
 
