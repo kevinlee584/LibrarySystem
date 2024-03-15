@@ -129,6 +129,10 @@ image::imgs/code-snapshotH.png[, 90%, 80%, align=center]
 
 為了避免 SQL-Injection 和 XSS 攻擊，對於使用者所傳資料，使用 REGEX 做檢查。
 
+image::imgs/code-snapshotR.png[, 90%, 80%, align=center]
+
+並且做參數化查詢，這樣使用者輸入的參數有不當的指令也不會因此執行成功。
+
 === [.red]#資料庫#
 
 * * *
