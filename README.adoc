@@ -1,3 +1,40 @@
+=== [.red]#DEMO#
+
+* * *
+
+* 登入
+
+image::imgs/gif/login.gif[, 90%, 80%, align=center]
+
+
+* * *
+
+* 登出
+
+image::imgs/gif/logout.gif[, 90%, 80%, align=center]
+
+
+* * *
+
+* 註冊
+
+image::imgs/gif/signUp.gif[, 90%, 80%, align=center]
+
+
+* * *
+
+* 借書
+
+image::imgs/gif/borrowBook.gif[, 90%, 80%, align=center]
+
+
+* * *
+
+* 還書
+
+image::imgs/gif/returnBook.gif[, 90%, 80%, align=center]
+
+
 === [.red]#Pre-requisites#
 * * *
 
@@ -237,40 +274,4 @@ UPDATE \`Inventory` SET \`Inventory`.\`Status` = "ALLOWED" WHERE \`Inventory`.\`
 |=== 
 
 在執行還書操作，會將 Inventory table 中要更新的 row 做 lock，是為了避免上面的狀況發生。若使用者因操作 API 問題，執行兩次還書操作，這中間又有人借同本書。就可能發生上面狀況，使得使用者2成功借到書本4，但書本4的狀態卻是 ALLOWED 的問題。
-
-=== [.red]#DEMO#
-
-* * *
-
-* 登入
-
-image::imgs/gif/login.gif[, 90%, 80%, align=center]
-
-
-* * *
-
-* 登出
-
-image::imgs/gif/logout.gif[, 90%, 80%, align=center]
-
-
-* * *
-
-* 註冊
-
-image::imgs/gif/signUp.gif[, 90%, 80%, align=center]
-
-
-* * *
-
-* 借書
-
-image::imgs/gif/borrowBook.gif[, 90%, 80%, align=center]
-
-
-* * *
-
-* 還書
-
-image::imgs/gif/returnBook.gif[, 90%, 80%, align=center]
  
