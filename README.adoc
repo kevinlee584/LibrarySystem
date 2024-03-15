@@ -34,6 +34,14 @@ image::imgs/gif/borrowBook.gif[, 90%, 80%, align=center]
 
 image::imgs/gif/returnBook.gif[, 90%, 80%, align=center]
 
+* 尚未登入
+
+image::imgs/gif/notSigned.gif[][, 90%, 80%, align=center]
+
+* 登入過期
+
+image::imgs/gif/tokenExpired.gif[][, 90%, 80%, align=center]
+
 
 === [.red]#Pre-requisites#
 * * *
