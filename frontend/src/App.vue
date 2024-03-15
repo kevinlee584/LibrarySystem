@@ -48,14 +48,14 @@ body {
   text-align: center;
 }
 
-label {
+.container label {
   display: block;
   margin-top: 30px;
   font-size: 16px;
   font-weight: 500;
 }
 
-input {
+.container input {
   display: block;
   height: 50px;
   width: 100%;

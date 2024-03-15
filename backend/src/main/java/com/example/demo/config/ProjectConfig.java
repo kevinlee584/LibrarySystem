@@ -43,8 +43,8 @@ public class ProjectConfig{
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(req ->
                         req.requestMatchers("/book/add", "/book/remove").hasRole("ADMIN")
-                                .requestMatchers("/book/borrow", "/book/return", "/book/show/record").hasAnyRole("ADMIN", "USER")
-                                .requestMatchers("/signin", "/signup", "/book/**").permitAll()
+                                .requestMatchers("/book/borrow", "/book/return", "/book/show/record", "/review/add").hasAnyRole("ADMIN", "USER")
+                                .requestMatchers("/signin", "/signup", "/book/**", "/review/**").permitAll()
                                 .anyRequest().denyAll());
 
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)

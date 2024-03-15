@@ -47,6 +47,15 @@ CREATE TABLE IF NOT EXISTS `JwtToken` (
     PRIMARY KEY(`UserId`)
 );
 
+CREATE TABLE IF NOT EXISTS `Review` (
+    `UserId`            int         NOT NULL,
+    `ISBN`              varchar(20) NOT NULL,
+    `Comment`           text        NOT NULL,
+    `Rate`              int         NOT NULL,
+    `ReviewTime`        datetime    NOT NULL,
+    PRIMARY KEY(`UserId`, `ISBN`)
+);
+
 
 DROP PROCEDURE IF EXISTS user_signup;
 DELIMITER //
@@ -252,6 +261,28 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS add_review;
+DELIMITER //
+CREATE PROCEDURE add_review(IN PhoneNumber varchar(10), IN ISBN varchar(20), IN Comment text, IN Rate int)
+BEGIN
+    DECLARE user_id int;
+    SET user_id = (SELECT `UserId` FROM `User` WHERE `User`.`PhoneNumber` = PhoneNumber);
+    IF user_id IS NOT NULL THEN
+        INSERT INTO `Review`(`UserId`, `ISBN`, `Comment`, `Rate`, `ReviewTime`)
+        VALUES (user_id, ISBN, Comment, Rate, NOW());
+    END IF;
+END//
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS get_reviews;
+DELIMITER //
+CREATE PROCEDURE get_reviews(IN ISBN varchar(20))
+BEGIN
+    SELECT * FROM `Review` WHERE `Review`.`ISBN` = ISBN;
+END//
+DELIMITER ;
+
 
 
 

@@ -24,6 +24,7 @@
                 <td class="homeThBorrow" v-else></td>
             </tr>
         </table>
+        <UserReviews></UserReviews>
     </div>
 </template>
 <script>
@@ -31,11 +32,13 @@ import axios from "axios";
 import config from '../config'
 import convertTime from "../utils/convertTime";
 import MyHeader from "./MyHeader.vue";
+import UserReviews from "./UserReviews.vue"
 
 export default {
     name: 'Book',
     components: {
-        MyHeader
+        MyHeader,
+        UserReviews
     },
     data() {
         return {
