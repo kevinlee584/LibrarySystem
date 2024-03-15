@@ -74,6 +74,8 @@ image::imgs/gif/tokenExpired.gif[][, 90%, 80%, align=center]
  $ docker compose up 
 ----
 
+進入 localhost:8080/
+
 === [.red]#架構圖#
 * * *
 image::imgs/arch.png[arch, 70%, 70%, align=center]
