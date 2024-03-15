@@ -34,9 +34,19 @@ image::imgs/gif/borrowBook.gif[, 90%, 80%, align=center]
 
 image::imgs/gif/returnBook.gif[, 90%, 80%, align=center]
 
+* * *
+
+* 評論
+
+image::imgs/gif/review.gif[, 90%, 80%, align=center]
+
+* * *
+
 * 尚未登入
 
 image::imgs/gif/notSigned.gif[][, 90%, 80%, align=center]
+
+* * *
 
 * 登入過期
 
@@ -142,6 +152,10 @@ image::imgs/code-snapshotH.png[, 90%, 80%, align=center]
 image::imgs/code-snapshotR.png[, 90%, 80%, align=center]
 
 並且做參數化查詢，這樣使用者輸入的參數有不當的指令也不會因此執行成功。
+
+image::imgs/exampleB.png[, 90%, 80%, align=center]
+
+且使用 VUE 框架下，不論是用模板還是渲染函數，內容都會做轉義動作。
 
 === [.red]#資料庫#
 
