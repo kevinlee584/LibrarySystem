@@ -18,10 +18,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+      
+    - name: build 
       working-directory: frontend
-    - run: |
-        npm ci
-        npm run build
+      run: |
+          npm ci
+          npm run build
 
     - name: build image
       working-directory: frontend
