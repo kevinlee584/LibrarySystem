@@ -62,6 +62,8 @@ image::imgs/gif/tokenExpired.gif[][, 90%, 80%, align=center]
 
 === [.red]#直接執行不進行編譯#
 
+* * *
+
 [,bash]
 ----
  $ docker compose -f ./docker-compose2.yaml up
