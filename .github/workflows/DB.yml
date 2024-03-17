@@ -12,6 +12,7 @@ jobs:
     - name: check
       run: |
         pwd
+        ls
     - name: build image
       run: |
         docker build . -t kevinlee584/librarysystem-DB:latest

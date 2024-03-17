@@ -10,12 +10,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      working-directory: frontend
+    - name: Use Node.js 18.x
       uses: actions/setup-node@v3
       with:
         node-version: 18.x
-        cache: 'npm'
       
     - name: build 
       working-directory: frontend
@@ -24,7 +22,6 @@ jobs:
           npm run build
 
     - name: build image
-      working-directory: frontend
       run: |
         cd ./frontend
         docker build . -t kevinlee584/librarysystem-frontend:latest
