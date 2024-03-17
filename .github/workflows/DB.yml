@@ -3,12 +3,6 @@ name: Database Ci
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-
-defaults:
-  run:
-    working-directory: DB
 
 jobs:
   build_and_publish:
@@ -16,9 +10,11 @@ jobs:
 
     steps:
     - name: build image
+      working-directory: DB
       run: |
         docker build . -t kevinlee584/librarysystem-DB:latest
     - name: publish
+      working-directory: DB
       run: |
         docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
         docker push kevinlee584/librarysystem-DB:latest
