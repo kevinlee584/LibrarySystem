@@ -9,6 +9,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: checker1
+      run: |
+        ls
+    - name: checker2
+      working-directory: DB
+      run: |
+        ls
     - name: build image
       working-directory: DB
       run: |
