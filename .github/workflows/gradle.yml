@@ -11,7 +11,7 @@ defaults:
     working-directory: ./backend
 
 jobs:
-  build:
+  build_and_publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,14 +28,8 @@ jobs:
 
     - name: Build with Gradle Wrapper
       run: ./gradlew build
-      
-  publish_image:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: build
+
+    - name: build image
         run: |
           docker build . -t kevinlee584/librarysystem-backend:latest
       - name: publish
@@ -48,6 +42,9 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: check pwd
+      run: |
+        pwd
     - uses: actions/checkout@v4
     - name: Set up JDK 17
       uses: actions/setup-java@v4
