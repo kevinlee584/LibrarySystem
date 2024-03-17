@@ -42,6 +42,7 @@ header {
         #0e5836
     );
     border-bottom: #080808 solid 1px;
+    position: relative;
 }
 
 header p {
