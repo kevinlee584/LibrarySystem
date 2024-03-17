@@ -60,6 +60,15 @@ image::imgs/gif/tokenExpired.gif[][, 90%, 80%, align=center]
 * npm and node
 * Docker
 
+=== [.red]#直接執行不進行編譯#
+
+[,bash]
+----
+ $ docker compose -f ./docker-compose2.yaml up
+----
+
+在每次上傳檔案後，會使用 GitHub Action 來上傳 images。因此可以直接用上面指令啟動伺服器。
+
 === [.red]#編譯 WEB 和 APPLICATION 並執行#
 * * *
 

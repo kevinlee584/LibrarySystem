@@ -1,0 +1,17 @@
+version: '3'
+services:
+  db:
+    image: kevinlee584/librarysystem-db:latest
+  backend1:
+    image: kevinlee584/librarysystem-backend:latest
+    depends_on:
+      - db
+  backend2:
+    image: kevinlee584/librarysystem-backend:latest
+    depends_on:
+      - db
+  frontend:
+    image: kevinlee584/librarysystem-frontend:latest
+    ports:
+      - '8080:80'
+      
