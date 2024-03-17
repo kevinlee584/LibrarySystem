@@ -1,6 +1,6 @@
 <template>
     <MyHeader></MyHeader>
-    <div class="block">
+    <div v-if="isLoad" class="block">
         <div class="intro">
             <div class="introName">
                 <h1 class="bookName">{{ book.name }}</h1>
@@ -26,25 +26,29 @@
         </table>
         <UserReviews></UserReviews>
     </div>
+    <Loader v-else></Loader>
 </template>
 <script>
 import axios from "axios";
 import config from '../config'
 import convertTime from "../utils/convertTime";
 import MyHeader from "./MyHeader.vue";
+import Loader from "./Loader.vue";
 import UserReviews from "./UserReviews.vue"
 
 export default {
     name: 'Book',
     components: {
         MyHeader,
-        UserReviews
+        UserReviews,
+        Loader
     },
     data() {
         return {
             name: '',
             book: {},
-            inventory: {}
+            inventory: {},
+            isLoad: false
         }
     },
     methods: {
@@ -75,18 +79,24 @@ export default {
     },
     async mounted() {
         let isbn = this.$route.query.ISBN
-        let book = (await axios.get(config.url + "/book/" + isbn)).data;
-        this.book = book;
 
-        if (book != "") {
-            let inventory = (await axios.get(config.url + "/book/inv/" + isbn)).data;
-            this.inventory = inventory.map(inv => {
-                inv.borrowingTime = convertTime(inv.borrowingTime);
-                return inv;
-            });
-        } else {
-            this.$router.push({ name: "Home" });
-        }
+        await axios.get(config.url + "/book/" + isbn)
+            .then(async (res) => {
+                this.book = res.data;
+                if (this.book != "") {
+                    await axios.get(config.url + "/book/inv/" + isbn)
+                        .then(res => {
+                            let inventory = res.data;
+                            this.inventory = inventory.map(inv => {
+                                inv.borrowingTime = convertTime(inv.borrowingTime);
+                                return inv;
+                            });
+                            this.isLoad = true;
+                        })
+                } else {
+                    this.$router.push({ name: "Home" });
+                }
+            })
     }
 
 }

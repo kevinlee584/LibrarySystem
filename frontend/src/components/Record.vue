@@ -1,6 +1,6 @@
 <template>
     <MyHeader></MyHeader>
-    <div class="block recordBlock">
+    <div class="block recordBlock" v-if="isLoad">
         <table v-if="inventory.length != 0">
             <tr>
                 <th class="recordThID">ID</th>
@@ -20,6 +20,7 @@
         </table>
         <div v-else><h1>尚未有借書紀錄</h1></div>
     </div>
+    <Loader v-else></Loader>
 </template>
 
 <script>
@@ -27,16 +28,19 @@ import axios from "axios";
 import config from '../config'
 import convertTime from '../utils/convertTime'
 import MyHeader from "./MyHeader.vue";
+import Loader from "./Loader.vue";
 
 export default {
     name: 'Record',
     data() {
         return {
-            inventory:[]
+            inventory:[],
+            isLoad: false
         }
     },
     components: {
-        MyHeader
+        MyHeader,
+        Loader
     },
     methods:{
         async returnBook(id){
@@ -79,6 +83,7 @@ export default {
                         inv.borrowingTime = convertTime(inv.borrowingTime);
                         return inv;
                     });
+                    this.isLoad = true;
                 }).catch(() => {
                     localStorage.removeItem("token");
                     window.alert("請重新登入");

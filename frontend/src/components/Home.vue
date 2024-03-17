@@ -1,6 +1,6 @@
 <template>
     <MyHeader></MyHeader>
-    <div class="block">
+    <div class="block" v-if="isLoad">
         <table class="homeTable">
             <tr class="tableNameTr">
                 <th class="homeThName">書名</th>
@@ -21,12 +21,14 @@
             <p v-else>&nbsp;&nbsp;</p>
         </div>
     </div>
+    <Loader v-else></Loader>
 </template>
 
 <script>
 import axios from "axios";
 import config from "../config";
 import MyHeader from "./MyHeader.vue";
+import Loader from "./Loader.vue";
 
 export default {
     name: 'Home',
@@ -34,16 +36,21 @@ export default {
         return {
             books: [],
             currentBooks: [],
-            index: 1
+            index: 1,
+            isLoad: false
         }
     },
     components: {
-        MyHeader
+        MyHeader,
+        Loader
     },
     async mounted() {
-        let books = (await axios.get(config.url + "/book/all")).data;
-        this.books = books;
-        this.currentBooks = books.slice(0, 10)
+        await axios.get(config.url + "/book/all")
+            .then(res => {
+                this.books = res.data;
+                this.currentBooks = this.books.slice(0, 10);
+                this.isLoad = true;
+            });
     },
     methods: {
         nextPage(){
