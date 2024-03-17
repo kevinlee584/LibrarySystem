@@ -10,9 +10,10 @@ jobs:
 
     steps:
     - name: build image
-      working-directory: DB
+      working-directory: ./DB
       run: |
         docker build . -t kevinlee584/librarysystem-DB:latest
+
     - name: publish
       run: |
         docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
