@@ -16,6 +16,9 @@ jobs:
     permissions:
       contents: read
     steps:
+    - name: pwd
+      run: |
+        pwd
     - uses: actions/checkout@v4
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -36,21 +39,3 @@ jobs:
         run: |
           docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
           docker push kevinlee584/librarysystem-backend:latest
-
-  dependency-submission:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-    - name: check pwd
-      run: |
-        pwd
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Generate and submit dependency graph
-      uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
