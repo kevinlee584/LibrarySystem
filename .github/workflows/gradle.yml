@@ -35,7 +35,7 @@ jobs:
     - name: build image
         run: |
           docker build . -t kevinlee584/librarysystem-backend:latest
-      - name: publish
-        run: |
-          docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
-          docker push kevinlee584/librarysystem-backend:latest
+    - name: publish
+      run: |
+        docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push kevinlee584/librarysystem-backend:latest
