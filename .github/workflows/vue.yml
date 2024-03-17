@@ -17,17 +17,17 @@ jobs:
         cache: 'npm'
       
     - name: build 
-      working-directory: frontend
       run: |
+          cd ./frontend 
           npm ci
           npm run build
 
     - name: build image
       working-directory: frontend
       run: |
+        cd ./frontend
         docker build . -t kevinlee584/librarysystem-frontend:latest
     - name: publish
-      working-directory: frontend
       run: |
         docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
         docker push kevinlee584/librarysystem-frontend:latest

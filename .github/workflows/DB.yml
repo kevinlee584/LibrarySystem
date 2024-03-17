@@ -10,8 +10,8 @@ jobs:
 
     steps:
     - name: build image
-      working-directory: ./DB
       run: |
+        cd ./DB
         docker build . -t kevinlee584/librarysystem-DB:latest
 
     - name: publish
