@@ -9,11 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: check
-      run: |
-        pwd
-        ls
     - name: build image
+      working-directory: DB
       run: |
         docker build . -t kevinlee584/librarysystem-DB:latest
 
