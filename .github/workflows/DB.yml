@@ -1,0 +1,24 @@
+name: Database Ci
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+defaults:
+  run:
+    working-directory: DB
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: build image
+      run: |
+        docker build . -t kevinlee584/librarysystem-DB:latest
+    - name: publish
+      run: |
+        docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push kevinlee584/librarysystem-DB:latest

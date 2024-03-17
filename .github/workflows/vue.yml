@@ -1,0 +1,36 @@
+name: Vue Ci
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build
+
+    - name: build image
+      run: |
+        docker build . -t kevinlee584/librarysystem-frontend:latest
+    - name: publish
+      run: |
+        docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push kevinlee584/librarysystem-frontend:latest
