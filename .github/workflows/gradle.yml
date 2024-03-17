@@ -6,15 +6,15 @@ on:
   pull_request:
     branches: [ "master" ]
 
+defaults:
+  run:
+    working-directory: ./backend
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./backend
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -32,10 +32,6 @@ jobs:
   publish_image:
     needs: build
     runs-on: ubuntu-latest
-    defaults:
-        run:
-          working-directory: ./backend
-
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -51,9 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    defaults:
-        run:
-          working-directory: ./backend
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
