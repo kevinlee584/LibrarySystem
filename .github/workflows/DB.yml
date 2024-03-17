@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: check
+      run: |
+        pwd
     - name: build image
       run: |
-        cd ./DB
         docker build . -t kevinlee584/librarysystem-DB:latest
 
     - name: publish
