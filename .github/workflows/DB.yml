@@ -13,9 +13,9 @@ jobs:
     - name: build image
       working-directory: DB
       run: |
-        docker build . -t kevinlee584/librarysystem-DB:latest
+        docker build . -t kevinlee584/librarysystem-db:latest
 
     - name: publish
       run: |
         docker login -u kevinlee584 -p ${{ secrets.DOCKER_HUB_TOKEN }}
-        docker push kevinlee584/librarysystem-DB:latest
+        docker push kevinlee584/librarysystem-db:latest
