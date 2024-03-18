@@ -69,7 +69,7 @@ image::imgs/gif/tokenExpired.gif[][, 90%, 80%, align=center]
  $ docker compose -f ./docker-compose2.yaml up
 ----
 
-在每次上傳檔案後，會使用 GitHub Action 來上傳 images。因此可以直接用上面指令啟動伺服器。
+在每次 git push 後，會使用 GitHub Action 來發布 images 到 DockerHub 上 。因此可以直接用上面指令 pull images ，來啟動伺服器。
 
 === [.red]#編譯 WEB 和 APPLICATION 並執行#
 * * *
